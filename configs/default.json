@@ -76,7 +76,7 @@
       "repo": "external/Diffusion-Low-Light",
       "checkpoint": "external/Diffusion-Low-Light/ckpt/model.pth.tar",
       "config": "external/Diffusion-Low-Light/configs/LOLv1.yml",
-      "pretraining": "LOL-v1",
+      "pretraining": "LOLv2 according to author checkpoint metadata; exact subset unverified",
       "sampling_timesteps": 10,
       "inference_seed": 230,
       "sampler": "author implicit sampler, eta=0",

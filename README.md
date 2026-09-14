@@ -45,7 +45,7 @@ Nguồn pretrained: [Zero-DCE](https://github.com/Li-Chongyi/Zero-DCE), [Retinex
 - Suy giảm trên RGB float32: gamma → Poisson theo tín hiệu → Gaussian → clip. Seed từ SHA256 của noise seed + sample ID + mức; đầu vào giống nhau giữa mọi enhancer.
 - Output/cache `.npy` float32, không lượng tử hóa thêm. Cache chứa ID, hash file, tham số, phiên bản mã, checkpoint, thời gian; dùng lại giữa các CNN seed.
 - HE/CLAHE xử lý Y trong YCrCb (bước này có lượng tử hóa 8-bit). MSR dùng epsilon 1e-6, percentile 1–99 chung RGB và trả đầu vào khi khoảng percentile gần 0.
-- Adapter pretrained chỉ nhận ảnh tối, không nhận nhãn/ground truth. Retinexformer dùng config LOL-v1; diffusion dùng EMA và implicit sampler tác giả, eta=0, 10 bước, seed mỗi ảnh cố định. Pad replicate đến bội số 4/32 rồi unpad; ở 64×64 không cần pad.
+- Adapter pretrained chỉ nhận ảnh tối, không nhận nhãn/ground truth. Retinexformer dùng config LOL-v1; checkpoint diffusion ghi train_dataset=LOLv2 (chưa xác minh phân tập cụ thể), dùng EMA và implicit sampler tác giả, eta=0, 10 bước, seed mỗi ảnh cố định. Pad replicate đến bội số 4/32 rồi unpad; ở 64×64 không cần pad.
 - CNN đúng 3 convolution theo tài liệu, không augmentation hoặc normalization ngoài chia 255. Adam; early stopping theo Macro-F1 validation; weights-only checkpoint.
 
 ## Pilot và ước lượng tài nguyên
