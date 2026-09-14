@@ -1,0 +1,97 @@
+{
+  "split_seed": 42,
+  "validation_fraction": 0.2,
+  "crop": {
+    "size": 64,
+    "padding": 0.05,
+    "roi_end_inclusive": true,
+    "interpolation": "bilinear"
+  },
+  "noise_seeds": [
+    101,
+    202,
+    303
+  ],
+  "train_seeds": [
+    11,
+    22,
+    33
+  ],
+  "conditions": {
+    "mild": {
+      "gamma_dark": 1.5,
+      "poisson_peak": 120,
+      "gaussian_sigma": 0.005
+    },
+    "medium": {
+      "gamma_dark": 2.2,
+      "poisson_peak": 60,
+      "gaussian_sigma": 0.01
+    },
+    "severe": {
+      "gamma_dark": 3.0,
+      "poisson_peak": 30,
+      "gaussian_sigma": 0.02
+    }
+  },
+  "cnn": {
+    "epochs": 40,
+    "patience": 7,
+    "batch_size": 64,
+    "learning_rate": 0.001,
+    "normalization": "none"
+  },
+  "enhancers": {
+    "identity": {},
+    "gamma": {
+      "gamma": 0.6
+    },
+    "he": {},
+    "clahe": {
+      "clip_limit": 2.0,
+      "tile_grid": [
+        8,
+        8
+      ]
+    },
+    "retinex": {
+      "sigmas": [
+        3,
+        10,
+        20
+      ]
+    },
+    "zero_dce": {
+      "repo": "external/Zero-DCE",
+      "checkpoint": "external/Zero-DCE/Zero-DCE_code/snapshots/Epoch99.pth",
+      "pretraining": "SICE subset; see author README"
+    },
+    "retinexformer": {
+      "repo": "external/Retinexformer",
+      "checkpoint": "external/Retinexformer/pretrained_weights/LOL_v1.pth",
+      "config": "external/Retinexformer/Options/RetinexFormer_LOL_v1.yml",
+      "pretraining": "LOL-v1"
+    },
+    "diffusion": {
+      "repo": "external/Diffusion-Low-Light",
+      "checkpoint": "external/Diffusion-Low-Light/ckpt/model.pth.tar",
+      "config": "external/Diffusion-Low-Light/configs/LOLv1.yml",
+      "pretraining": "LOL-v1",
+      "sampling_timesteps": 10,
+      "inference_seed": 230,
+      "sampler": "author implicit sampler, eta=0",
+      "ema": true
+    }
+  },
+  "ssim": {
+    "data_range": 1.0,
+    "channel_axis": -1,
+    "win_size": 7,
+    "gaussian_weights": false,
+    "use_sample_covariance": true,
+    "K1": 0.01,
+    "K2": 0.03
+  },
+  "bootstrap_repetitions": 1000,
+  "selection_tolerance": 0.005
+}

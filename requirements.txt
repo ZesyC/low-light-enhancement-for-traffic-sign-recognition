@@ -1,0 +1,14 @@
+# Versions verified on Python 3.14 / macOS arm64. Full environment: requirements-lock.txt.
+numpy==2.5.3
+pillow==12.3.0
+opencv-python-headless==5.0.0.93
+torch==2.14.0
+torchvision==0.29.0
+scikit-image==0.26.0
+scikit-learn==1.9.1
+scipy==1.18.1
+matplotlib==3.11.2
+einops==0.8.2
+PyYAML==6.0.3
+pytorch-msssim==1.0.0
+gdown==6.2.0
