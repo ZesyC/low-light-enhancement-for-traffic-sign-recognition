@@ -86,16 +86,17 @@ class CropDataset(Dataset):
 
 | Chỉ số | Baseline | Sau Augmentation | Thay đổi |
 |---|---|---|---|
-| Accuracy (trung bình 3 seed) | 75.38% | | |
-| Macro-F1 (trung bình 3 seed) | 63.75% | | |
-| Weighted-F1 (trung bình 3 seed) | 74.70% | | |
-| Gap Train-Val Macro-F1 | 33.6pp | | |
-| F1 Class 0 | 0.00 | | |
-| F1 Class 19 | 0.00 | | |
-| F1 Class 20 | 0.04 | | |
-| F1 Class 21 | 0.05 | | |
-| Epoch tốt nhất (trung bình) | 38 | | |
-| Ghi chú | | | |
+| Accuracy (trung bình 3 seed) | 75.38% | **79.93%** | **+4.55pp** |
+| Macro-F1 (trung bình 3 seed) | 63.75% | **70.00%** | **+6.25pp** |
+| Weighted-F1 (trung bình 3 seed) | 74.70% | **79.41%** | **+4.71pp** |
+| Gap Train-Val Macro-F1 | 33.6pp | **25.3pp** | **-8.3pp** |
+| F1 Class 0 | 0.00 | 0.07 | +0.07 |
+| F1 Class 19 | 0.00 | 0.00 | 0.00 |
+| F1 Class 20 | 0.04 | **0.40** | **+0.36** |
+| F1 Class 21 | 0.05 | 0.06 | +0.01 |
+| F1 Class 37 | 0.12 | 0.19 | +0.07 |
+| Epoch tốt nhất (trung bình) | 38 | 39.3 | +1.3 |
+| Ghi chú | - | Cả 3 seed đạt Macro-F1 69.35%-70.82%; class 19 vẫn có F1 = 0. | Cải thiện tổng quát hóa, chưa xử lý xong mất cân bằng lớp. |
 
 ---
 
@@ -416,17 +417,17 @@ Sau khi hoàn thành tất cả các cải thiện, điền vào bảng dưới 
 
 | Chỉ số | Baseline | +Augment | +BN/Drop | +ClassBalance | +Model | +Hyper | Kết quả cuối |
 |---|---|---|---|---|---|---|---|
-| Accuracy | 75.38% | | | | | | |
-| Macro-F1 | 63.75% | | | | | | |
-| Weighted-F1 | 74.70% | | | | | | |
-| Gap Train-Val | 33.6pp | | | | | | |
-| F1 Class 0 | 0.00 | | | | | | |
-| F1 Class 19 | 0.00 | | | | | | |
-| F1 Class 20 | 0.04 | | | | | | |
-| F1 Class 21 | 0.05 | | | | | | |
-| F1 Class 37 | 0.12 | | | | | | |
-| Số tham số | ~100K | | | | | | |
-| Thời gian train | | | | | | | |
+| Accuracy | 75.38% | **79.93%** | | | | | |
+| Macro-F1 | 63.75% | **70.00%** | | | | | |
+| Weighted-F1 | 74.70% | **79.41%** | | | | | |
+| Gap Train-Val | 33.6pp | **25.3pp** | | | | | |
+| F1 Class 0 | 0.00 | 0.07 | | | | | |
+| F1 Class 19 | 0.00 | 0.00 | | | | | |
+| F1 Class 20 | 0.04 | **0.40** | | | | | |
+| F1 Class 21 | 0.05 | 0.06 | | | | | |
+| F1 Class 37 | 0.12 | 0.19 | | | | | |
+| Số tham số | ~100K | ~100K | | | | | |
+| Thời gian train | | Chưa đo | | | | | |
 
 ### Mục tiêu hướng tới
 
