@@ -13,6 +13,7 @@ from src.enhancement import classical
 from src.experiment import choose_pipeline
 from src.metrics import classification, image_metrics, paired_rows, paired_bootstrap
 from src.model import make_cnn
+from src.training import TRAIN_TRANSFORM
 
 
 def main():
@@ -83,6 +84,8 @@ def main():
     loss.backward()
     optimizer.step()
     assert torch.isfinite(loss) and not torch.equal(weight, model[0].weight)
+    augmented = TRAIN_TRANSFORM(inputs[0])
+    assert augmented.shape == inputs[0].shape and torch.isfinite(augmented).all()
     print('PASS: degradation, classical enhancers, split/ROI, metrics, pairing/bootstrap, cache roundtrip and CNN backward')
 
 
