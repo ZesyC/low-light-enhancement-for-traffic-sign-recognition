@@ -42,7 +42,8 @@ def train(root, config, seed, device, output, per_class=None, epochs=None):
     output.mkdir(parents=True, exist_ok=True)
     checkpoint = output / f'cnn_{seed}.pt'
     if checkpoint.exists():
-        raise FileExistsError(f'Refusing to overwrite {checkpoint}; select another --output')
+        print(f'{checkpoint} already exists; skipping seed {seed} (select another --output to retrain)', flush=True)
+        return checkpoint
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
