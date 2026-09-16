@@ -152,16 +152,31 @@ def make_cnn():
 
 | Chỉ số | Baseline | Sau BN + Dropout | Thay đổi |
 |---|---|---|---|
-| Accuracy (trung bình 3 seed) | 75.38% | | |
-| Macro-F1 (trung bình 3 seed) | 63.75% | | |
-| Weighted-F1 (trung bình 3 seed) | 74.70% | | |
-| Gap Train-Val Macro-F1 | 33.6pp | | |
-| F1 Class 0 | 0.00 | | |
-| F1 Class 19 | 0.00 | | |
-| F1 Class 20 | 0.04 | | |
-| F1 Class 21 | 0.05 | | |
-| Epoch tốt nhất (trung bình) | 38 | | |
-| Ghi chú | | | |
+| Accuracy (trung bình 3 seed) | 75.38% | **92.45%** | **+17.07pp** |
+| Macro-F1 (trung bình 3 seed) | 63.75% | **87.57%** | **+23.82pp** |
+| Weighted-F1 (trung bình 3 seed) | 74.70% | **92.17%** | **+17.47pp** |
+| Gap Train-Val Macro-F1 | 33.6pp | **4.27pp** | **-29.33pp** |
+| F1 Class 0 | 0.00 | **0.83** | **+0.83** |
+| F1 Class 19 | 0.00 | 0.00 | 0.00 |
+| F1 Class 20 | 0.04 | **0.77** | **+0.73** |
+| F1 Class 21 | 0.05 | **0.84** | **+0.79** |
+| Epoch tốt nhất (trung bình) | 38 | 37.7 | -0.3 |
+| Ghi chú | - | Cả 3 seed hoàn thành 40 epoch; Macro-F1 87.01%–88.57%; class 19 vẫn F1 = 0. | Regularization hiệu quả, overfitting giảm mạnh, class 19 chưa xử lý xong. |
+
+### Đánh giá kết quả
+
+Cả 3 seed đều `completed`, chạy hết 40/40 epoch, và checkpoint khớp đúng epoch có validation Macro-F1 tốt nhất.
+
+| Seed | Best epoch | Validation Accuracy | Validation Macro-F1 | Train Macro-F1 tại best epoch | Gap Train–Val F1 |
+|---|---|---|---|---|---|
+| 11 | 37 | 92.11% | 87.01% | 91.71% | 4.70pp |
+| 22 | 39 | 92.81% | 88.57% | 92.39% | 3.82pp |
+| 33 | 37 | 92.43% | 87.14% | 91.45% | 4.30pp |
+| Trung bình ± SD | 37.7 | **92.45% ± 0.35pp** | **87.57% ± 0.86pp** | 91.85% | **4.27pp** |
+
+BatchNorm và Dropout giảm overfitting rất mạnh: gap train–val Macro-F1 từ 33.6pp xuống còn 3.82–4.70pp. Accuracy và Macro-F1 đều vượt mục tiêu (90% và 85%), đồng thời ổn định giữa các seed.
+
+Class 0, 20 và 21 đã phục hồi rõ. Class 19 vẫn F1 = 0 ở cả 3 seed, chủ yếu bị nhầm thành class 23 hoặc 31. Mục tiêu “không còn lớp nào có F1 = 0” chưa đạt, nhưng CNN hiện tại đủ tốt để khóa làm bộ phân loại cố định cho thí nghiệm chính A. Xử lý mất cân bằng lớp để lại cho bước 3 nếu cần.
 
 ---
 
@@ -417,17 +432,17 @@ Sau khi hoàn thành tất cả các cải thiện, điền vào bảng dưới 
 
 | Chỉ số | Baseline | +Augment | +BN/Drop | +ClassBalance | +Model | +Hyper | Kết quả cuối |
 |---|---|---|---|---|---|---|---|
-| Accuracy | 75.38% | **79.93%** | | | | | |
-| Macro-F1 | 63.75% | **70.00%** | | | | | |
-| Weighted-F1 | 74.70% | **79.41%** | | | | | |
-| Gap Train-Val | 33.6pp | **25.3pp** | | | | | |
-| F1 Class 0 | 0.00 | 0.07 | | | | | |
-| F1 Class 19 | 0.00 | 0.00 | | | | | |
-| F1 Class 20 | 0.04 | **0.40** | | | | | |
-| F1 Class 21 | 0.05 | 0.06 | | | | | |
-| F1 Class 37 | 0.12 | 0.19 | | | | | |
-| Số tham số | ~100K | ~100K | | | | | |
-| Thời gian train | | Chưa đo | | | | | |
+| Accuracy | 75.38% | **79.93%** | **92.45%** | | | | |
+| Macro-F1 | 63.75% | **70.00%** | **87.57%** | | | | |
+| Weighted-F1 | 74.70% | **79.41%** | **92.17%** | | | | |
+| Gap Train-Val | 33.6pp | **25.3pp** | **4.27pp** | | | | |
+| F1 Class 0 | 0.00 | 0.07 | **0.83** | | | | |
+| F1 Class 19 | 0.00 | 0.00 | 0.00 | | | | |
+| F1 Class 20 | 0.04 | **0.40** | **0.77** | | | | |
+| F1 Class 21 | 0.05 | 0.06 | **0.84** | | | | |
+| F1 Class 37 | 0.12 | 0.19 | **0.67** | | | | |
+| Số tham số | ~100K | ~100K | ~100K | | | | |
+| Thời gian train | | Chưa đo | Chưa đo | | | | |
 
 ### Mục tiêu hướng tới
 
