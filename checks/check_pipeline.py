@@ -7,12 +7,13 @@ import numpy as np
 import torch
 
 from src.common import read_image, save_array
-from src.data import crop_box, split_tracks, quarantine_test_overlap
+from src.data import crop_box, split_tracks, quarantine_test_overlap, prepare
 from src.degradation import degrade
 from src.enhancement import classical
 from src.experiment import choose_pipeline
 from src.metrics import classification, image_metrics, paired_rows, paired_bootstrap
 from src.model import make_cnn
+from src.training import TRAIN_TRANSFORM, train
 
 
 def main():
@@ -72,6 +73,15 @@ def main():
         path = Path(tmp) / 'image.npy'
         save_array(path, a)
         assert np.array_equal(read_image(path), a)
+        root = Path(tmp)
+        manifest = root / 'data/manifests/gtsrb_samples.csv'
+        manifest.parent.mkdir(parents=True)
+        manifest.write_text('sample_id\n')
+        prepare(root, config)
+        output = root / 'out'
+        output.mkdir()
+        (output / 'cnn_11.pt').write_bytes(b'x')
+        assert train(root, config, 11, torch.device('cpu'), output) == output / 'cnn_11.pt'
     torch.manual_seed(11)
     model = make_cnn()
     inputs, labels = torch.rand(2, 3, 64, 64), torch.tensor([0, 42])
@@ -83,6 +93,8 @@ def main():
     loss.backward()
     optimizer.step()
     assert torch.isfinite(loss) and not torch.equal(weight, model[0].weight)
+    augmented = TRAIN_TRANSFORM(inputs[0])
+    assert augmented.shape == inputs[0].shape and torch.isfinite(augmented).all()
     print('PASS: degradation, classical enhancers, split/ROI, metrics, pairing/bootstrap, cache roundtrip and CNN backward')
 
 

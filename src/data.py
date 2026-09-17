@@ -97,7 +97,8 @@ def prepare(root, config):
     root = Path(root)
     manifest = root / 'data/manifests/gtsrb_samples.csv'
     if manifest.exists():
-        raise FileExistsError('Manifest already exists; use check-data, or a different --root for a new protocol')
+        print('Manifest already exists; skipping prepare (use check-data, or a different --root for a new protocol)', flush=True)
+        return
     raw = root / 'data/raw/gtsrb'
     train_csv = sorted(raw.glob('GTSRB_Final_Training_Images/**/GT-*.csv'))
     test_csv = list(raw.glob('GTSRB_Final_Test_GT/**/GT-final_test.csv'))
