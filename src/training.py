@@ -5,6 +5,7 @@ import random
 import numpy as np
 import torch
 from torch.utils.data import Dataset, DataLoader
+import torchvision.transforms as T
 
 from .common import digest, environment, read_csv, read_image, write_csv, write_json
 from .data import subset_rows
@@ -13,15 +14,27 @@ from .model import make_cnn, image_tensor
 
 
 class CropDataset(Dataset):
-    def __init__(self, root, rows):
+    def __init__(self, root, rows, transform=None):
         self.root, self.rows = Path(root), rows
+        self.transform = transform
 
     def __len__(self):
         return len(self.rows)
 
     def __getitem__(self, index):
         row = self.rows[index]
-        return image_tensor(read_image(self.root / row['crop_path'])), int(row['class_id'])
+        tensor = image_tensor(read_image(self.root / row['crop_path']))
+        if self.transform is not None:
+            tensor = self.transform(tensor)
+        return tensor, int(row['class_id'])
+
+
+TRAIN_TRANSFORM = T.Compose([
+    T.RandomRotation(degrees=10),
+    T.RandomAffine(degrees=0, translate=(0.05, 0.05)),
+    T.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.1),
+    T.RandomErasing(p=0.1, scale=(0.02, 0.08)),
+])
 
 
 def train(root, config, seed, device, output, per_class=None, epochs=None):
@@ -29,7 +42,8 @@ def train(root, config, seed, device, output, per_class=None, epochs=None):
     output.mkdir(parents=True, exist_ok=True)
     checkpoint = output / f'cnn_{seed}.pt'
     if checkpoint.exists():
-        raise FileExistsError(f'Refusing to overwrite {checkpoint}; select another --output')
+        print(f'{checkpoint} already exists; skipping seed {seed} (select another --output to retrain)', flush=True)
+        return checkpoint
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
@@ -52,7 +66,8 @@ def train(root, config, seed, device, output, per_class=None, epochs=None):
     rows = read_csv(manifest)
     train_rows = subset_rows(rows, 'train', per_class)
     validation_rows = subset_rows(rows, 'validation', per_class)
-    loaders = {s: DataLoader(CropDataset(root, r), batch_size=cfg['batch_size'], shuffle=s == 'train',
+    loaders = {s: DataLoader(CropDataset(root, r, transform=TRAIN_TRANSFORM if s == 'train' else None),
+                            batch_size=cfg['batch_size'], shuffle=s == 'train',
                             num_workers=0, generator=torch.Generator().manual_seed(seed))
                for s, r in [('train', train_rows), ('validation', validation_rows)]}
     model = make_cnn().to(device)

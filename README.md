@@ -31,7 +31,7 @@ python -m scripts.run prepare
 python -m scripts.run check-data
 ```
 
-`setup_external` tải đúng commit mã tác giả và các weights cần dùng, lưu SHA256 tại `external/sources.json`; không sửa repository ngoài. `requirements-lock.txt` ghi toàn bộ phiên bản đã cài. `prepare` không ghi đè manifest đã tồn tại. Khi chạy lại dữ liệu đã chuẩn bị, dùng `check-data`.
+`setup_external` tải đúng commit mã tác giả và các weights cần dùng, lưu SHA256 tại `external/sources.json`; không sửa repository ngoài. `requirements-lock.txt` ghi toàn bộ phiên bản đã cài. `prepare` bỏ qua nếu manifest đã có. `train` bỏ qua seed nếu checkpoint đã có; đổi `--output` khi muốn train lại.
 
 Nguồn train mặc định là **GTSRB_Final_Training_Images.zip**, 39.209 ảnh; giữ đủ 12.630 ảnh official test. Metadata [archive của nhóm tác giả](https://sid.erda.dk/public/archives/daaeac0d7ce1152aea9b61d9f1e19370/published-archive.html) phân biệt bản này với `GTSRB-Training_fixed.zip` (26.640 ảnh train cuộc thi cũ). Đã sửa nhầm lẫn từ tài liệu ban đầu; các artifact `*_training_fixed` chỉ lưu pilot cũ.
 
