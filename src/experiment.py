@@ -13,7 +13,7 @@ from .data import subset_rows
 from .degradation import degrade
 from .enhancement import Enhancer, METHODS, provenance, validation_grid
 from .metrics import classification, image_metrics
-from .model import make_cnn, image_tensor
+from .model import make_cnn, image_tensor, cnn_config
 
 
 def source_code_hash():
@@ -95,13 +95,32 @@ def cache_images(root, rows, manifest_hash, config, condition, noise_seed, metho
     return records
 
 
-def load_cnn(checkpoint, manifest_hash, device):
+def load_cnn(checkpoint, manifest_hash, device, config=None):
     saved = torch.load(checkpoint, map_location=device, weights_only=True)
     if saved['manifest_sha256'] != manifest_hash:
         raise ValueError('CNN trained on a different manifest')
-    model = make_cnn().to(device)
+    cfg = cnn_config(saved.get('cnn_config'))
+    if config is not None and cfg != cnn_config(config):
+        raise ValueError('Checkpoint classifier config does not match experiment config')
+    model = make_cnn(cfg, pretrained=False).to(device)
     model.load_state_dict(saved['state_dict'])
     return model.eval(), saved
+
+
+@torch.inference_mode()
+def classifier_latency(model, images, device):
+    """Measure resize + normalization + classifier; exclude transfer and file I/O."""
+    for _ in range(2):
+        model(images)
+    synchronize(device)
+    start = time.perf_counter()
+    for _ in range(5):
+        model(images)
+    synchronize(device)
+    return {'latency_ms_per_image': 1000 * (time.perf_counter() - start) / (5 * len(images)),
+            'batch_size': len(images), 'crop_resolution': list(images.shape[-2:]),
+            'device': str(device), 'warmup_batches': 2, 'measured_batches': 5,
+            'includes': 'resize, normalization, classifier; excludes transfer, I/O, enhancer'}
 
 
 @torch.inference_mode()
@@ -143,7 +162,7 @@ def tune(root, config, checkpoints, device, output, per_class=None, methods=METH
         raise ValueError('Validation must include identity and unique methods')
     all_rows, manifest_hash = manifest_rows(root)
     rows = subset_rows(all_rows, 'validation', per_class)
-    models = [load_cnn(p, manifest_hash, device) for p in checkpoints]
+    models = [load_cnn(p, manifest_hash, device, config['cnn']) for p in checkpoints]
     seeds = [s['seed'] for _, s in models]
     if len(seeds) != len(set(seeds)):
         raise ValueError('Duplicate CNN training seeds')
@@ -162,7 +181,7 @@ def tune(root, config, checkpoints, device, output, per_class=None, methods=METH
                         f1s.append(score['macro_f1'])
                         run = {'method': method, 'config_id': config_id(params), 'condition': condition,
                                'noise_seed': noise, 'train_seed': saved['seed'], 'macro_f1': score['macro_f1'],
-                               'accuracy': score['accuracy'], 'n_images': len(rows)}
+                               'accuracy': score['accuracy'], 'weighted_f1': score['weighted_f1'], 'n_images': len(rows)}
                         details.append(run)
                         write_csv(output / 'predictions' / f'{config_id(run)}.csv', predictions)
             candidates.append({'method': method, 'params': params, 'macro_f1': float(np.mean(f1s)),
@@ -251,7 +270,7 @@ def evaluate(root, protocol_path, output, device):
     for c in protocol['checkpoints']:
         if digest(c['path']) != c['sha256']:
             raise ValueError('Frozen checkpoint changed')
-        models[c['seed']] = load_cnn(c['path'], manifest_hash, device)[0]
+        models[c['seed']] = load_cnn(c['path'], manifest_hash, device, config['cnn'])[0]
     for method, recorded in protocol['enhancer_provenance'].items():
         if provenance(method, config['enhancers'][method]) != recorded:
             raise ValueError(f'Frozen enhancer changed: {method}')
@@ -260,6 +279,13 @@ def evaluate(root, protocol_path, output, device):
         raise ValueError('Output directory belongs to a different protocol')
     if not lock.exists():
         write_json(lock, protocol)
+    if not (output / 'classifier_latency.json').exists():
+        images = torch.stack([image_tensor(read_image(root / r['crop_path']))
+                              for r in rows[:config['cnn']['batch_size']]]).to(device)
+        write_json(output / 'classifier_latency.json', {
+            'cnn_config': cnn_config(config['cnn']),
+            'measurements': {str(seed): classifier_latency(model, images, device)
+                             for seed, model in models.items()}})
     states = [dict(run, status='planned') for run in protocol['runs']]
     summaries = []
     for index, run in enumerate(protocol['runs']):
@@ -276,6 +302,7 @@ def evaluate(root, protocol_path, output, device):
             summaries.append({'dataset': 'gtsrb', 'split': 'test', 'protocol': 'A', 'subset_id': protocol['subset_id'],
                               **run, 'run_id': run_id, 'config_id': config_id(params), 'n_images': len(rows),
                               'accuracy': score['accuracy'], 'macro_f1': score['macro_f1'],
+                              'weighted_f1': score['weighted_f1'],
                               'psnr_mean': float(np.mean([r['psnr'] for r in predictions])),
                               'ssim_mean': float(np.mean([r['ssim'] for r in predictions])),
                               'latency_ms': float(np.mean([r['latency_ms'] for r in predictions]))})

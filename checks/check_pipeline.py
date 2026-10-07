@@ -13,7 +13,7 @@ from src.enhancement import classical
 from src.experiment import choose_pipeline
 from src.metrics import classification, image_metrics, paired_rows, paired_bootstrap
 from src.model import make_cnn
-from src.training import TRAIN_TRANSFORM, train
+from src.training import TRAIN_TRANSFORM
 
 
 def main():
@@ -78,10 +78,7 @@ def main():
         manifest.parent.mkdir(parents=True)
         manifest.write_text('sample_id\n')
         prepare(root, config)
-        output = root / 'out'
-        output.mkdir()
-        (output / 'cnn_11.pt').write_bytes(b'x')
-        assert train(root, config, 11, torch.device('cpu'), output) == output / 'cnn_11.pt'
+        # Checkpoint skip now requires validated metadata; covered in check_resnet18.
     torch.manual_seed(11)
     model = make_cnn()
     inputs, labels = torch.rand(2, 3, 64, 64), torch.tensor([0, 42])

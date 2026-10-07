@@ -88,7 +88,7 @@ def environment():
             'platform': platform.platform(), 'commit': git_commit(),
             'cuda': torch.cuda.is_available(), 'mps': torch.backends.mps.is_available(),
             'packages': {p: importlib.metadata.version(p) for p in
-                         ['numpy', 'torch', 'pillow', 'opencv-python-headless', 'scikit-image', 'scikit-learn']}}
+                         ['numpy', 'torch', 'torchvision', 'pillow', 'opencv-python-headless', 'scikit-image', 'scikit-learn']}}
 
 
 def device_for(name='auto'):
