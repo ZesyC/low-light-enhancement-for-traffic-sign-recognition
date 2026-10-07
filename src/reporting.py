@@ -11,7 +11,7 @@ from PIL import Image, ImageDraw
 from scipy.stats import pearsonr, spearmanr
 
 from .common import config_id, read_csv, read_image, write_csv, write_json
-from .metrics import paired_bootstrap, paired_rows
+from .metrics import classification, paired_bootstrap, paired_rows
 
 
 def report(output, root=Path('.')):
@@ -32,6 +32,9 @@ def report(output, root=Path('.')):
         if len(preds) != len(expected_ids) or {p['sample_id'] for p in preds} != expected_ids:
             raise ValueError('Run sample coverage differs from frozen subset')
         predictions[row['run_id']] = preds
+        if not row.get('weighted_f1'):
+            row['weighted_f1'] = classification([int(p['class_id']) for p in preds],
+                                                 [int(p['prediction']) for p in preds])['weighted_f1']
     baselines = {(r['condition'], r['train_seed'], r['noise_seed']): r for r in rows if r['method'] == 'identity'}
     deltas = []
     for row in rows:
@@ -39,10 +42,10 @@ def report(output, root=Path('.')):
             continue
         base = baselines[(row['condition'], row['train_seed'], row['noise_seed'])]
         paired_rows(predictions[base['run_id']], predictions[row['run_id']])
-        deltas.append({**row, **{'delta_'+k+'_pp': 100*(float(row[k])-float(base[k])) for k in ['accuracy', 'macro_f1']},
+        deltas.append({**row, **{'delta_'+k+'_pp': 100*(float(row[k])-float(base[k])) for k in ['accuracy', 'macro_f1', 'weighted_f1']},
                        **{'delta_'+k: float(row[k])-float(base[k]) for k in ['psnr_mean', 'ssim_mean']}})
     write_csv(output / 'deltas.csv', deltas)
-    metrics = ['accuracy', 'macro_f1', 'psnr_mean', 'ssim_mean', 'latency_ms']
+    metrics = ['accuracy', 'macro_f1', 'weighted_f1', 'psnr_mean', 'ssim_mean', 'latency_ms']
     grouped = defaultdict(list)
     for row in rows:
         grouped[(row['condition'], row['method'], row['train_seed'])].append(row)
@@ -56,7 +59,7 @@ def report(output, root=Path('.')):
     for (condition, method, seed), members in grouped.items():
         sensitivity.append({'condition': condition, 'method': method, 'train_seed': seed,
                             **{k+'_noise_std': float(np.std([float(r[k]) for r in members], ddof=1)) if len(members)>1 else 0.0
-                               for k in ['accuracy', 'macro_f1']}})
+                               for k in ['accuracy', 'macro_f1', 'weighted_f1']}})
     write_csv(output / 'noise_sensitivity.csv', sensitivity)
     aggregate = []
     for condition, method in sorted({(r['condition'], r['method']) for r in rows}):
@@ -72,7 +75,7 @@ def report(output, root=Path('.')):
     for condition in protocol['config']['conditions']:
         points = [r for r in aggregate if r['condition'] == condition]
         for quality in ['psnr_mean', 'ssim_mean']:
-            for recognition in ['accuracy', 'macro_f1']:
+            for recognition in ['accuracy', 'macro_f1', 'weighted_f1']:
                 x, y = np.array([r[quality+'_mean'] for r in points]), np.array([r[recognition+'_mean'] for r in points])
                 valid = np.isfinite(x) & np.isfinite(y)
                 x, y = x[valid], y[valid]
@@ -91,7 +94,7 @@ def report(output, root=Path('.')):
                 fig.savefig(figures / f'scatter_{condition}_{quality}_{recognition}.png', dpi=140)
                 plt.close(fig)
     write_csv(output / 'correlations.csv', correlations)
-    for metric in ['accuracy', 'macro_f1']:
+    for metric in ['accuracy', 'macro_f1', 'weighted_f1']:
         fig, ax = plt.subplots(figsize=(9, 5))
         levels = list(protocol['config']['conditions'])
         for method in protocol['selection']['methods']:
@@ -169,19 +172,30 @@ def report(output, root=Path('.')):
             ax.imshow(score['confusion_matrix'], cmap='Blues')
             ax.set(xlabel='Predicted class', ylabel='True class', title=f"{row['method']} {row['condition']} seed {row['train_seed']}")
             fig.tight_layout(); fig.savefig(figures / f"confusion_{row['run_id']}.png", dpi=130); plt.close(fig)
+    class_rows = []
+    for row in rows:
+        preds = predictions[row['run_id']]
+        score = classification([int(p['class_id']) for p in preds], [int(p['prediction']) for p in preds])
+        for label, (support, f1) in enumerate(zip(score['support'], score['f1_per_class'])):
+            class_rows.append({**{k: row[k] for k in ['run_id', 'condition', 'method', 'train_seed', 'noise_seed']},
+                               'class_id': label, 'support': support, 'f1': f1})
+    write_csv(output / 'per_class.csv', class_rows)
     lines = ['# GTSRB: báo cáo kết quả thực chạy', '',
              '**PILOT — không phải kết quả đánh giá cuối.**' if protocol['pilot'] else 'Giao thức A: CNN khóa trọng số.', '',
+             f"Classifier: {protocol['config']['cnn'].get('architecture', 'cnn')}; normalization: {protocol['config']['cnn']['normalization']}.",
              f"Số mẫu mỗi điều kiện: {len(expected_ids)}; subset: `{protocol['subset_id']}`.",
              f"Pipeline chọn trước test bằng validation: **{selected}**.", '',
              'Noise seed được lấy trung bình trong mỗi training seed, sau đó báo mean ± sample SD qua training seed.', '',
-             '| Mức | Phương pháp | Accuracy (%) | Macro-F1 (%) | PSNR (dB) | SSIM | ms/ảnh |',
-             '|---|---|---:|---:|---:|---:|---:|']
+             '| Mức | Phương pháp | Accuracy (%) | Macro-F1 (%) | Weighted-F1 (%) | PSNR (dB) | SSIM | Enhancer ms/ảnh |',
+             '|---|---|---:|---:|---:|---:|---:|---:|']
     for r in aggregate:
-        lines.append(f"| {r['condition']} | {r['method']} | {100*r['accuracy_mean']:.2f} ± {100*r['accuracy_std']:.2f} | {100*r['macro_f1_mean']:.2f} ± {100*r['macro_f1_std']:.2f} | {r['psnr_mean_mean']:.2f} | {r['ssim_mean_mean']:.4f} | {r['latency_ms_mean']:.2f} |")
+        lines.append(f"| {r['condition']} | {r['method']} | {100*r['accuracy_mean']:.2f} ± {100*r['accuracy_std']:.2f} | {100*r['macro_f1_mean']:.2f} ± {100*r['macro_f1_std']:.2f} | {100*r['weighted_f1_mean']:.2f} ± {100*r['weighted_f1_std']:.2f} | {r['psnr_mean_mean']:.2f} | {r['ssim_mean_mean']:.4f} | {r['latency_ms_mean']:.2f} |")
     lines += ['', '## Phân tích và giới hạn', '',
+              '- `classifier_latency.json`: thời gian preprocessing + classifier riêng, có warm-up và đồng bộ; `latency_ms` trong bảng chỉ là enhancer.',
               '- `deltas.csv`: chênh lệch so identity cùng mức và seed; nhận diện tính bằng điểm phần trăm.',
               '- `correlations.csv`: Pearson/Spearman theo mức; loại clean; ít điểm và các phương pháp phụ thuộc nhau.',
               '- `bootstrap.json`: paired bootstrap theo group/source, có điều kiện trên checkpoint.',
+              '- `per_class.csv`: support và F1 đủ 43 lớp, gồm class 19; confusion matrix trong `classes/` và `figures/`.',
               '- `cases.csv`, `example_ids.json`: mẫu được giúp, làm hỏng, hoặc vẫn nhận sai; ID lựa chọn cố định.',
               '- Đây là thiếu sáng mô phỏng trên crop GTSRB; không suy thành hiệu năng camera ban đêm.',
               '- PSNR clean là vô hạn; không thay bằng số hữu hạn. Một training seed không ước lượng được biến thiên huấn luyện.', '',

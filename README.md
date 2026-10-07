@@ -258,12 +258,97 @@ python -m scripts.run --device cuda train --seeds 11 22 33
 
 Lưu ý khi chạy lại:
 
-- `train` bỏ qua seed nếu `cnn_<seed>.pt` đã tồn tại. Checkpoint tồn tại chưa chứng minh lần train trước hoàn thành: kiểm tra `train_<seed>.json`. Muốn train lại, chọn `--output` mới.
+- `train` chỉ bỏ qua checkpoint đã hoàn thành, khớp hash, seed, manifest, cấu hình, số epoch yêu cầu và ID train/validation. Metadata cũ thiếu thông tin xác minh hoặc lượt train dang dở sẽ bị từ chối; dùng `--output` mới, không ghi đè baseline.
 - `freeze` không ghi đè file giao thức đã tồn tại; dùng tên mới cho thí nghiệm mới.
 - `--per-class` giữ nguyên nhóm ảnh nên số ảnh train/validation có thể vượt yêu cầu; đối chiếu ID đã lưu.
 - Giữ nguyên code, cấu hình và checkpoint giữa freeze và evaluate.
 - Muốn đánh giá toàn tập, bỏ `--per-class` tương ứng ở tune/freeze, dùng output mới và ước lượng tài nguyên trước.
 - Chọn tham số trên validation; không điều chỉnh theo điểm test rồi coi đó là đánh giá độc lập.
+
+### ResNet-18 pretrained (cấu hình riêng)
+
+`configs/resnet18.json` dùng ImageNet weights, fine-tune toàn bộ mạng với AdamW
+(lr `1e-4`, weight decay `1e-4`, batch 32). Crop/cache/enhancer và PSNR/SSIM vẫn
+ở 64×64; model resize toàn crop lên 224×224 rồi normalize ImageNet đúng một lần.
+Không dùng center crop. `configs/default.json` và state-dict CNN cũ vẫn chạy được;
+load checkpoint ResNet không cần mạng. Chỉ train mới cần tải weights lần đầu.
+
+```bash
+python -m scripts.run check
+python -m checks.check_resnet18
+python -m checks.check_workflow
+
+# Pilot kỹ thuật; dùng output mới nếu đường dẫn này đã có kết quả.
+python -m scripts.run --config configs/resnet18.json train --seeds 11 --epochs 2 --per-class 10 --output outputs/resnet18_pilot/train
+python -m scripts.run --config configs/resnet18.json tune --checkpoints outputs/resnet18_pilot/train/cnn_11.pt --per-class 2 --methods identity gamma --output outputs/resnet18_pilot/validation
+python -m scripts.run freeze --selection outputs/resnet18_pilot/validation/selection.json --per-class 2 --pilot --output outputs/resnet18_pilot/protocol.json
+python -m scripts.run evaluate --protocol outputs/resnet18_pilot/protocol.json --output outputs/resnet18_pilot/test
+python -m scripts.run report --output outputs/resnet18_pilot/test
+
+# Thực nghiệm đầy đủ: xem validation seed 11 trước khi chốt LR cho cả ba seed.
+python -m scripts.run --config configs/resnet18.json train --seeds 11 --output outputs/resnet18_A/train
+python -m scripts.run --config configs/resnet18.json train --seeds 11 22 33 --output outputs/resnet18_A/train
+python -m scripts.run --config configs/resnet18.json tune --checkpoints outputs/resnet18_A/train/cnn_11.pt outputs/resnet18_A/train/cnn_22.pt outputs/resnet18_A/train/cnn_33.pt --per-class 30 --output outputs/resnet18_A/validation
+python -m scripts.run freeze --selection outputs/resnet18_A/validation/selection.json --per-class 10 --subset-seed 42 --output outputs/resnet18_A/protocol.json
+python -m scripts.run evaluate --protocol outputs/resnet18_A/protocol.json --output outputs/resnet18_A/test_subset
+python -m scripts.run report --output outputs/resnet18_A/test_subset
+```
+
+`check_resnet18` kiểm tra preprocessing, gradient backbone/head, round-trip offline,
+checkpoint cũ, từ chối cấu hình sai và skip an toàn. `check_workflow` chạy cả hai kiến
+trúc, kiểm tra cache/replay, Weighted-F1 từ báo cáo cũ và checkpoint bị sửa.
+
+Khi tải weights trên Python macOS gặp lỗi CA, dùng bundle đã cài, không tắt TLS:
+
+```bash
+export SSL_CERT_FILE="$(python -c 'import certifi; print(certifi.where())')"
+```
+
+Báo cáo bổ sung Weighted-F1 trong `summary.csv`, `noise_averaged.csv`, `aggregate.csv`
+và F1/support từng lớp ở `per_class.csv` (gồm class 19). Báo cáo cũ thiếu Weighted-F1
+được tính lại từ predictions trong bộ nhớ, không sửa summary gốc. `latency_ms` chỉ đo
+enhancer; `classifier_latency.json` đo resize + normalization + classifier riêng với
+warm-up và đồng bộ thiết bị, ghi batch, crop resolution và device. Thời gian epoch gồm
+train + validation; RSS là peak process, CUDA là peak allocated, MPS là driver allocated
+ở cuối epoch (không phải peak VRAM). Windows không có số RSS qua stdlib này.
+
+Audit ngày 07/10/2026 xác nhận 31.350 train / 7.829 validation / 12.630 test, đủ 43 lớp,
+quarantine 30 ảnh; subset 430 ảnh seed 42 khớp `outputs/test_subset_plan.json`.
+Artifact `outputs/low-light-outputs-A-subset/` dùng cho các bảng cũ chưa có trong workspace.
+Hai checkpoint tại `outputs/train/` có validation Macro-F1 lần lượt 66,64% và 63,74%,
+không phải checkpoint đã xác minh cho số liệu README. State-dict của chúng còn dùng CNN trước BatchNorm, khác kiến trúc baseline trong code trước đợt nâng cấp này; strict loader từ chối đúng. Tương thích ngược được kiểm chứng với CNN baseline hiện tại, không tự đoán lại kiến trúc lịch sử từ keys. Chưa dùng các checkpoint lịch sử để tuyên bố mức cải thiện.
+
+Pilot local đã hoàn thành ngày 07/10/2026: seed 11, 2 epoch, MPS, batch 32,
+1.290 ảnh train + 1.290 validation (giữ nguyên track nên vượt ngân sách 10 ảnh/lớp).
+Validation Accuracy **38,37%**, Macro-F1/Weighted-F1 **34,46%**; class 19 F1=0,
+support=30. Đây chỉ là kiểm chứng kỹ thuật, **chưa đạt mục tiêu 90%**. Tune chọn gamma
+bằng validation; test pilot đủ **19/19 lượt**, 86 ảnh/lượt, clean Accuracy **30,23%**,
+Macro-F1/Weighted-F1 **26,68%**. Không dùng điểm test pilot để chọn LR/loss cho lượt đầy đủ.
+
+Epoch pilot mất 35,68 và 25,18 giây trên máy 8 GiB RAM; RSS peak ghi nhận khoảng 331 MiB,
+MPS driver allocated cuối epoch khoảng 2,11 GiB. Đây không phải benchmark độc lập vì có
+check CPU chạy đồng thời. Classifier + preprocessing đo riêng **3,64 ms/ảnh**, batch 32,
+2 warm-up + 5 batch đo. Artifacts: `outputs/resnet18_pilot/test/report.md`,
+`outputs/resnet18_pilot/train/learning_11.csv`, `outputs/resnet18_pilot/test/classifier_latency.json`.
+
+### Chạy trên Kaggle
+
+`scripts/run_resnet18_kaggle.py` chép snapshot private do Kaggle giải nén, xác minh hash, chạy check và
+smoke enhancer trên GPU, rồi train đầy đủ. Giữ torch/torchvision có CUDA của Kaggle;
+không cài bộ requirements dành cho macOS đè lên. Nếu seed 11 chưa đạt cả ba metric
+validation >90%, thử thêm LR `3e-5` và `3e-4`, chọn theo Macro-F1 validation. Tái sử dụng
+seed 11 hợp lệ, train 22/33, lưu `validation_summary.json`, rồi tune/freeze/evaluate
+đủ 219 lượt trên subset 430 ảnh đã chốt. Training ảnh tối và full official test chưa
+nằm trong job này; baseline so sánh paired vẫn cần artifacts tương ứng.
+
+Job private [GTSRB ResNet18 Protocol A 20261007](https://www.kaggle.com/code/sangtranminh211/gtsrb-resnet18-protocol-a-20261007), phiên bản 2, đã nhận Tesla T4, qua check và smoke đủ 8 enhancer; đang train đầy đủ; log seed 11 epoch 1 ghi validation loss 0,0387 và Macro-F1 97,68%. Chưa có kết quả cuối của ba seed hoặc test. Bộ đóng gói và metadata chạy tại `outputs/resnet18_kaggle/`. Chạy lại bằng Kaggle CLI
+cần output/job mới để giữ kết quả cũ; theo dõi lượt hiện tại:
+
+```bash
+kaggle kernels status sangtranminh211/gtsrb-resnet18-protocol-a-20261007
+kaggle kernels logs -f sangtranminh211/gtsrb-resnet18-protocol-a-20261007
+kaggle kernels output sangtranminh211/gtsrb-resnet18-protocol-a-20261007 -p outputs/resnet18_kaggle/download
+```
 
 ## 9. Đọc kết quả ở đâu?
 
@@ -271,7 +356,7 @@ Lưu ý khi chạy lại:
 |---|---|
 | `outputs/train/train_<seed>.json` | Trạng thái, môi trường và ID dữ liệu train |
 | `outputs/train/cnn_<seed>.pt` | Checkpoint CNN tốt nhất |
-| `outputs/train/learning_<seed>.csv` | Loss, Accuracy, Macro-F1 từng epoch |
+| `outputs/train/learning_<seed>.csv` | Loss, Accuracy, Macro-F1, Weighted-F1, thời gian epoch và bộ nhớ |
 | `outputs/validation/selection.json` | Tham số và phương pháp đã chọn |
 | `outputs/protocol_subset.json` | Giao thức đã khóa |
 | `outputs/test_subset/report.md` | Báo cáo dễ đọc |
