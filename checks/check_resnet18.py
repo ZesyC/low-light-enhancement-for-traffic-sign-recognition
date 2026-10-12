@@ -9,8 +9,9 @@ import numpy as np
 import torch
 from torch.nn import functional as F
 
-from src.common import digest, save_array, write_csv, write_json
+from src.common import digest, read_csv, save_array, write_csv, write_json
 from src.experiment import load_cnn, predict
+from src.metrics import classification
 from src.model import cnn_config, make_cnn
 from src.training import CropDataset, train
 
@@ -103,8 +104,23 @@ def main():
         record['status'] = 'running'
         write_json(output / 'train_11.json', record)
         rejects(lambda: train(root, training_config, 11, device, output), 'incomplete')
+        # Early stopping uses a significant-improvement anchor; checkpoint keeps the actual best.
+        training_config['cnn'].update(epochs=20, patience=5, min_delta=0.001)
+        for label, values, best_epoch, last_epoch in [
+                ('plateau', [0.5, 0.501, 0.5008, 0.5009, 0.5007, 0.5006], 2, 6),
+                ('cumulative', [0.5, 0.5006, 0.5012, 0.5015, 0.5016, 0.5017, 0.5018, 0.5019], 8, 8)]:
+            metrics = classification([0, 1], [0, 1])
+            mocked = [{**metrics, 'macro_f1': value} for value in values for _ in range(2)]
+            with patch('src.training.classification', side_effect=mocked):
+                saved = train(root, training_config, 11, device, root / label)
+            checkpoint_data = torch.load(saved, map_location='cpu', weights_only=True)
+            assert checkpoint_data['epoch'] == best_epoch
+            assert checkpoint_data['macro_f1'] == max(values)
+            assert int(read_csv(root / label / 'learning_11.csv')[-1]['epoch']) == last_epoch
+        assert cnn_config({})['min_delta'] == 0.0
     for change in [{'architecture': 'unknown'}, {'normalization': 'none'}, {'input_size': 64},
-                   {'weights': 'DEFAULT'}, {'optimizer': 'unknown'}, {'weight_decay': -1}]:
+                   {'weights': 'DEFAULT'}, {'optimizer': 'unknown'}, {'weight_decay': -1},
+                   {'min_delta': -0.001}, {'min_delta': float('nan')}, {'min_delta': float('inf')}]:
         rejects(lambda: cnn_config({**cfg, **change}), 'nvalid' if 'architecture' not in change else 'Unknown')
     from scripts.run_resnet18_kaggle import select_configuration
     for trial_scores in [[0.95], [0.8, 0.94, 0.91]]:

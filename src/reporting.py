@@ -181,7 +181,9 @@ def report(output, root=Path('.')):
                                'class_id': label, 'support': support, 'f1': f1})
     write_csv(output / 'per_class.csv', class_rows)
     lines = ['# GTSRB: báo cáo kết quả thực chạy', '',
-             '**PILOT — không phải kết quả đánh giá cuối.**' if protocol['pilot'] else 'Giao thức A: CNN khóa trọng số.', '',
+             '**PILOT — không phải kết quả đánh giá cuối.**' if protocol['pilot'] else
+             f"Giao thức {protocol['protocol']}: classifier khóa trọng số; training regime: "
+             f"{protocol['config'].get('training', {}).get('regime', 'clean')}.", '',
              f"Classifier: {protocol['config']['cnn'].get('architecture', 'cnn')}; normalization: {protocol['config']['cnn']['normalization']}.",
              f"Số mẫu mỗi điều kiện: {len(expected_ids)}; subset: `{protocol['subset_id']}`.",
              f"Pipeline chọn trước test bằng validation: **{selected}**.", '',

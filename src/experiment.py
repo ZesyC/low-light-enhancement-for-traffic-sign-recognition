@@ -163,6 +163,9 @@ def tune(root, config, checkpoints, device, output, per_class=None, methods=METH
     all_rows, manifest_hash = manifest_rows(root)
     rows = subset_rows(all_rows, 'validation', per_class)
     models = [load_cnn(p, manifest_hash, device, config['cnn']) for p in checkpoints]
+    if any(s.get('training', {'regime': 'clean'}) != config.get('training', {'regime': 'clean'})
+           for _, s in models):
+        raise ValueError('Checkpoint training regime does not match experiment config')
     seeds = [s['seed'] for _, s in models]
     if len(seeds) != len(set(seeds)):
         raise ValueError('Duplicate CNN training seeds')
@@ -243,7 +246,9 @@ def freeze(root, selection_path, output, per_class=None, subset_seed=42, pilot=F
             for condition in config['conditions']:
                 for method in selection['methods']:
                     runs.append({'condition': condition, 'noise_seed': noise, 'method': method, 'train_seed': checkpoint['seed']})
-    snapshot = {'protocol': 'A', 'pilot': pilot, 'config': config, 'manifest_sha256': manifest_hash,
+    regime = config.get('training', {}).get('regime', 'clean')
+    snapshot = {'protocol': 'A' if regime == 'clean' else 'mixed_lowlight',
+                'pilot': pilot, 'config': config, 'manifest_sha256': manifest_hash,
                 'selection_sha256': digest(selection_path), 'selection': selection,
                 'sample_ids': [r['sample_id'] for r in test], 'subset_seed': subset_seed,
                 'subset_id': 'official_test' if per_class is None else config_id([r['sample_id'] for r in test]),
@@ -270,7 +275,10 @@ def evaluate(root, protocol_path, output, device):
     for c in protocol['checkpoints']:
         if digest(c['path']) != c['sha256']:
             raise ValueError('Frozen checkpoint changed')
-        models[c['seed']] = load_cnn(c['path'], manifest_hash, device, config['cnn'])[0]
+        model, saved = load_cnn(c['path'], manifest_hash, device, config['cnn'])
+        if saved.get('training', {'regime': 'clean'}) != config.get('training', {'regime': 'clean'}):
+            raise ValueError('Checkpoint training regime does not match frozen config')
+        models[c['seed']] = model
     for method, recorded in protocol['enhancer_provenance'].items():
         if provenance(method, config['enhancers'][method]) != recorded:
             raise ValueError(f'Frozen enhancer changed: {method}')
@@ -299,7 +307,7 @@ def evaluate(root, protocol_path, output, device):
             write_csv(output / 'predictions' / f'{run_id}.csv', predictions)
             score = classification([r['class_id'] for r in predictions], [r['prediction'] for r in predictions])
             write_json(output / 'classes' / f'{run_id}.json', score)
-            summaries.append({'dataset': 'gtsrb', 'split': 'test', 'protocol': 'A', 'subset_id': protocol['subset_id'],
+            summaries.append({'dataset': 'gtsrb', 'split': 'test', 'protocol': protocol['protocol'], 'subset_id': protocol['subset_id'],
                               **run, 'run_id': run_id, 'config_id': config_id(params), 'n_images': len(rows),
                               'accuracy': score['accuracy'], 'macro_f1': score['macro_f1'],
                               'weighted_f1': score['weighted_f1'],
