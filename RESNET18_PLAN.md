@@ -2,7 +2,7 @@
 
 Ngày lập: 07/10/2026. Nhánh: `resnet18-migration-plan`.
 Mốc xuất phát: `b750ed5` trên `main` cục bộ; chưa fetch để xác nhận trạng thái remote.
-Trạng thái cập nhật: đã tích hợp code và hoàn tất pilot local; đang chạy thực nghiệm đầy đủ trên Kaggle (chưa có kết quả ba seed).
+Trạng thái cập nhật 12/10/2026: ResNet-A đã train đủ ba seed, hoàn thành subset và full official test; artifacts đã tải và kiểm chứng. Đang triển khai thí nghiệm mixed low-light riêng trên Kaggle.
 
 ## 1. Mục tiêu và giới hạn
 
@@ -74,7 +74,8 @@ Tạo `configs/resnet18.json` theo cấu trúc hiện có; giữ `configs/defaul
 | learning_rate | 0,0001 |
 | weight_decay | 0,0001 |
 | batch_size | 32 |
-| epochs / patience | 40 / 7 |
+| epochs / patience | 20 / 5 |
+| min_delta (validation Macro-F1) | 0.001 |
 
 Giữ augmentation hiện tại ở lần thử đầu để giảm số yếu tố thay đổi. Chưa thêm scheduler, freeze/unfreeze nhiều giai đoạn, focal loss, sampler hay ensemble. Các trường mới phải có mặc định tương thích CNN cũ: Adam và không thêm weight decay ngoài hành vi hiện tại.
 
@@ -219,11 +220,11 @@ Không thay code giữa tune/freeze/evaluate vì source hash đã khóa. Nếu c
 - [x] CNN cũ vẫn load/chạy được; default config giữ hành vi cũ.
 - [x] ResNet load pretrained khi train mới; checkpoint inference hoạt động offline.
 - [x] Train và inference dùng cùng preprocessing; có kiểm tra runnable.
-- [ ] Ba seed hoàn thành, checkpoint đúng epoch validation Macro-F1 tốt nhất.
-- [ ] Run matrix hoàn chỉnh, đủ ID và không bỏ ảnh lỗi.
-- [ ] Accuracy/Macro-F1/Weighted-F1 có mean ± SD, từng seed và từng mức tối.
+- [x] Ba seed hoàn thành, checkpoint đúng epoch validation Macro-F1 tốt nhất.
+- [x] Run matrix hoàn chỉnh, đủ ID và không bỏ ảnh lỗi.
+- [x] Accuracy/Macro-F1/Weighted-F1 có mean ± SD, từng seed và từng mức tối.
 - [x] Báo cáo class 19, confusion matrix và latency classifier riêng.
-- [ ] Kết luận đạt/chưa đạt >90% theo từng phạm vi; không dùng mục tiêu làm số liệu.
+- [x] Kết luận đạt/chưa đạt >90% theo từng phạm vi; không dùng mục tiêu làm số liệu.
 - [x] Artifacts baseline được giữ nguyên; README trỏ đúng kết quả mới.
 
 Hoàn thành tích hợp kỹ thuật không đồng nghĩa đạt mục tiêu thực nghiệm. Nếu metric chưa đạt, bàn giao kết quả và nguyên nhân quan sát được. Quay về baseline bằng `configs/default.json` và checkpoint cũ trong output riêng; không xóa kết quả hoặc dùng lệnh Git phá hủy.
@@ -252,3 +253,17 @@ Hoàn thành tích hợp kỹ thuật không đồng nghĩa đạt mục tiêu t
 
 - Kaggle v2 đã qua kiểm tra GPU Tesla T4 và smoke cả 8 enhancer. Log thực seed 11,
   epoch 1: validation loss 0,0387, Macro-F1 0,9768; đây chưa phải kết quả cuối ba seed/test.
+
+- Theo yêu cầu người dùng, dừng Kaggle v2 và đổi cấu hình thành tối đa 20 epoch,
+  patience 5, min_delta 0.001. Checkpoint lưu Macro-F1 cao nhất; patience chỉ reset
+  khi vượt mốc cải thiện gần nhất hơn 0.001. Chưa khởi chạy lại.
+
+## 9. Cập nhật 12/10/2026 — artifacts và thí nghiệm tiếp theo
+
+- Kaggle ResNet-A v3 và full-test v4 đều COMPLETE. Tải archive 312 MiB, kiểm CRC, SHA256 checkpoint, manifest và source hash gốc; lưu source snapshot cũ trước sửa code.
+- Full-test đủ 219 lượt × 12.630 ảnh. Đối chiếu toàn bộ 2.765.970 predictions và tính lại ba metric nhận diện, mean/SD. Xem `outputs/resnet18_A/test_full/verification.json`.
+- Clean test: Accuracy 99,15%, Macro-F1 98,90%, Weighted-F1 99,13%. Diffusion được chọn bằng validation; Macro-F1 mild/medium/severe 93,45/83,87/64,88%. Chưa đạt 90% ở medium/severe.
+- Thực hiện bước 6 thành `configs/resnet18_lowlight.json`, training 50% clean + 50% low-light. Seed train/validation noise riêng, checkpoint chọn bằng trung bình bốn mức validation, guardrail clean Macro-F1 >= 98,4741%. Thí nghiệm này đo training regime riêng, không quy mức tăng cho enhancer.
+- Pilot và train đầy đủ chạy trên Kaggle; output/protocol mới, không sửa checkpoint hoặc protocol A đã khóa. So sánh paired với classifier clean replay trên cùng subset; delta identity cô lập training, enhancer tune riêng được ghi rõ.
+- Ban đầu thư mục gốc không có quyền ghi nên dùng bản làm việc riêng. Sau khi người dùng cấp quyền, ngày 12/10/2026 đã đồng bộ code và artifacts về `/Users/minhsang/low-light-enhancement-for-traffic-sign-recognition`; collector Kaggle tiếp tục tại thư mục gốc. Bản trước đồng bộ được lưu trong `outputs/sync_backup/20261012_111952/`.
+- Chưa có kết quả mixed để kết luận chất lượng; tiếp tục theo trạng thái job và artifacts thực tế.

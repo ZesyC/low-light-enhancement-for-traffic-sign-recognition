@@ -1,0 +1,110 @@
+{
+  "split_seed": 42,
+  "validation_fraction": 0.2,
+  "crop": {
+    "size": 64,
+    "padding": 0.05,
+    "roi_end_inclusive": true,
+    "interpolation": "bilinear"
+  },
+  "noise_seeds": [
+    101,
+    202,
+    303
+  ],
+  "train_seeds": [
+    11,
+    22,
+    33
+  ],
+  "conditions": {
+    "mild": {
+      "gamma_dark": 1.5,
+      "poisson_peak": 120,
+      "gaussian_sigma": 0.005
+    },
+    "medium": {
+      "gamma_dark": 2.2,
+      "poisson_peak": 60,
+      "gaussian_sigma": 0.01
+    },
+    "severe": {
+      "gamma_dark": 3.0,
+      "poisson_peak": 30,
+      "gaussian_sigma": 0.02
+    }
+  },
+  "cnn": {
+    "epochs": 20,
+    "patience": 5,
+    "min_delta": 0.001,
+    "batch_size": 32,
+    "learning_rate": 0.0001,
+    "normalization": "imagenet",
+    "architecture": "resnet18",
+    "weights": "IMAGENET1K_V1",
+    "input_size": 224,
+    "optimizer": "adamw",
+    "weight_decay": 0.0001
+  },
+  "enhancers": {
+    "identity": {},
+    "gamma": {
+      "gamma": 0.6
+    },
+    "he": {},
+    "clahe": {
+      "clip_limit": 2.0,
+      "tile_grid": [
+        8,
+        8
+      ]
+    },
+    "retinex": {
+      "sigmas": [
+        3,
+        10,
+        20
+      ]
+    },
+    "zero_dce": {
+      "repo": "external/Zero-DCE",
+      "checkpoint": "external/Zero-DCE/Zero-DCE_code/snapshots/Epoch99.pth",
+      "pretraining": "SICE subset; see author README"
+    },
+    "retinexformer": {
+      "repo": "external/Retinexformer",
+      "checkpoint": "external/Retinexformer/pretrained_weights/LOL_v1.pth",
+      "config": "external/Retinexformer/Options/RetinexFormer_LOL_v1.yml",
+      "pretraining": "LOL-v1"
+    },
+    "diffusion": {
+      "repo": "external/Diffusion-Low-Light",
+      "checkpoint": "external/Diffusion-Low-Light/ckpt/model.pth.tar",
+      "config": "external/Diffusion-Low-Light/configs/LOLv1.yml",
+      "pretraining": "LOLv2 according to author checkpoint metadata; exact subset unverified",
+      "sampling_timesteps": 10,
+      "inference_seed": 230,
+      "sampler": "author implicit sampler, eta=0",
+      "ema": true
+    }
+  },
+  "ssim": {
+    "data_range": 1.0,
+    "channel_axis": -1,
+    "win_size": 7,
+    "gaussian_weights": false,
+    "use_sample_covariance": true,
+    "K1": 0.01,
+    "K2": 0.03
+  },
+  "bootstrap_repetitions": 1000,
+  "selection_tolerance": 0.005,
+  "training": {
+    "regime": "mixed_lowlight",
+    "clean_probability": 0.5,
+    "train_noise_seed": 4101,
+    "validation_noise_seed": 9101,
+    "clean_min_macro_f1": 0.9847406164813893
+  }
+}

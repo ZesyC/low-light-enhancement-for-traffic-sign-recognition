@@ -1,3 +1,5 @@
+import math
+
 import torch
 from torch import nn
 
@@ -5,7 +7,8 @@ from torch import nn
 def cnn_config(config=None):
     """Resolve legacy defaults and reject incompatible classifier settings."""
     cfg = {'architecture': 'cnn', 'input_size': 64, 'normalization': 'none',
-           'weights': None, 'optimizer': 'adam', 'weight_decay': 0.0, **(config or {})}
+           'weights': None, 'optimizer': 'adam', 'weight_decay': 0.0,
+           'min_delta': 0.0, **(config or {})}
     expected = {'cnn': (64, 'none', None), 'resnet18': (224, 'imagenet', 'IMAGENET1K_V1')}
     if cfg['architecture'] not in expected:
         raise ValueError(f"Unknown architecture: {cfg['architecture']}")
@@ -13,6 +16,8 @@ def cnn_config(config=None):
         raise ValueError('Invalid classifier input_size, normalization or weights')
     if cfg['optimizer'] not in {'adam', 'adamw'} or cfg['weight_decay'] < 0:
         raise ValueError('Invalid classifier optimizer or weight_decay')
+    if not math.isfinite(cfg['min_delta']) or cfg['min_delta'] < 0:
+        raise ValueError('Invalid classifier min_delta: expected a finite nonnegative value')
     return cfg
 
 
