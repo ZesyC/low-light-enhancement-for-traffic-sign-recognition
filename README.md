@@ -6,6 +6,14 @@ Bài tập lớn môn xử lý ảnh: so sánh bảy phương pháp tăng sáng 
 
 Nhánh `main` tập trung vào xử lý ảnh. Code và kết quả train thích nghi được giữ riêng trên `experiment/mixed-lowlight`. Lịch sử CNN nhỏ và các kế hoạch triển khai cũ có trong Git; không dùng bảng CNN cũ để so paired với ResNet full-test.
 
+## Notebook pipeline hoàn chỉnh
+
+[GTSRB_LLIE_Complete_Pipeline.ipynb](notebooks/GTSRB_LLIE_Complete_Pipeline.ipynb) trình bày bằng tiếng Việt từ raw archive, ROI/split, mô phỏng tối/nhiễu đến histogram, Gamma/HE/CLAHE/MSR, đánh giá chất lượng, ablation và demo. ResNet chỉ kiểm chứng nhận diện: train mới ba seed clean 11/22/33 rồi giữ cố định khi so phương pháp xử lý ảnh.
+
+Notebook clone repo GitHub ở commit `82a7c2e`, rồi gọi code có sẵn. Bản nguồn gồm 22 cell như file mẫu nhưng chỉ **30 dòng code**; [notebook_helpers.py](notebooks/notebook_helpers.py) đi kèm gom phần setup, vẽ hình, kiểm chứng và vòng lặp ablation/demo. Thuật toán xử lý ảnh và training vẫn dùng `src/` từ repo clone. Bản rút gọn này chưa chạy GPU, đang được xem lại trước khi gửi.
+
+Khi chạy trên [Kaggle](https://www.kaggle.com/code/sangtranminh211/gtsrb-llie-complete-pipeline-20261014), bật GPU T4, Internet và hai dataset private `gtsrb-resnet18-audited-experiment-20261007`, `gtsrb-llie-notebook-inputs-20261014`; file helper phải có trong bundle đầu vào. Ma trận mới gồm 219 lượt × 430 ảnh test và ablation 288 lượt × 430 ảnh; bảng full-test cũ bên dưới thuộc run riêng.
+
 ## Pipeline và dữ liệu
 
 ```text
@@ -121,6 +129,7 @@ python -m checks.check_workflow
 python -m checks.check_full_test_staging
 python -m checks.check_finalization
 python -m checks.check_raw_replay
+python -m checks.check_notebook
 python -m scripts.verify_results outputs/resnet18_A/test_full
 ```
 
