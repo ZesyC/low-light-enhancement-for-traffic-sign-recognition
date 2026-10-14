@@ -1,10 +1,12 @@
 """Check notebook syntax and, when supplied, genuine completed cell outputs."""
 import ast
 import builtins
+from copy import deepcopy
 import json
 from pathlib import Path
 import sys
 import symtable
+from unittest.mock import patch
 
 
 def check(path, executed=False):
@@ -44,6 +46,21 @@ def check(path, executed=False):
             for call in ast.walk(ast.parse(''.join(cell['source']))):
                 if isinstance(call, ast.Call) and isinstance(call.func, ast.Attribute) and isinstance(call.func.value, ast.Name) and call.func.value.id == 'nb':
                     assert len(call.args) == functions[call.func.attr], call.func.attr
+        # Exercise entry into ablation: a late local import previously shadowed deepcopy.
+        function = next(f for f in tree.body if isinstance(f, ast.FunctionDef) and f.name == 'run_ablation')
+        namespace = {'deepcopy': deepcopy}
+        exec(compile(ast.Module(body=[function], type_ignores=[]), str(helper_path), 'exec'), namespace)
+        config = json.loads(Path('configs/resnet18.json').read_text())
+        class ReachedAblation(Exception):
+            pass
+        with patch('scripts.run_research_evidence_kaggle.degradation_variants', side_effect=ReachedAblation) as variants:
+            try:
+                namespace['run_ablation'](Path('.'), config, {'enhancers': config['enhancers']}, [], None, [])
+            except ReachedAblation:
+                pass
+            else:
+                raise AssertionError('Ablation must reach degradation variant setup')
+            variants.assert_called_once_with(config['conditions']['medium'])
     if executed:
         assert [c['execution_count'] for c in code] == list(range(1, len(code) + 1))
         assert sum('image/png' in o.get('data', {}) for c in code for o in c['outputs']) >= 10
