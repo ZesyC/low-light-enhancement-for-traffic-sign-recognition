@@ -18,7 +18,7 @@ from src.training import TRAIN_TRANSFORM
 
 def main():
     torch.set_num_threads(2)
-    config = json.loads(Path('configs/default.json').read_text())
+    config = json.loads(Path('checks/fixtures/cnn.json').read_text())
     x = np.full((64, 64, 3), 0.5, np.float32)
     assert np.array_equal(degrade(x), x)
     assert np.allclose(degrade(x, gamma_dark=2), 0.25)

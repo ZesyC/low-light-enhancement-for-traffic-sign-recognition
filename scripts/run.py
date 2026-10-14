@@ -71,8 +71,8 @@ def smoke(root, config, device, output, count=43):
 
 
 def main():
-    parser = argparse.ArgumentParser(description='GTSRB low-light pipeline; RGB 64x64, fixed CNN protocol A')
-    parser.add_argument('--config', default='configs/default.json')
+    parser = argparse.ArgumentParser(description='GTSRB low-light pipeline; RGB 64x64, fixed clean ResNet-18 protocol A')
+    parser.add_argument('--config', default='configs/resnet18.json')
     parser.add_argument('--root', type=Path, default=Path('.'))
     parser.add_argument('--device', default='auto', choices=['auto','cpu','mps','cuda'])
     parser.add_argument('--threads', type=int, default=2)

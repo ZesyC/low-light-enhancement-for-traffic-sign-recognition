@@ -14,7 +14,7 @@ from src.data import subset_rows
 
 def main():
     root=Path('.')
-    config=json.loads(Path('configs/default.json').read_text())
+    config=json.loads(Path('configs/resnet18.json').read_text())
     samples, manifest_hash=manifest_rows(root)
     ids=[r['sample_id'] for r in subset_rows(samples,'validation',30)]
     records=[]

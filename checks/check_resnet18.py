@@ -83,7 +83,7 @@ def main():
         np.testing.assert_allclose([r['true_probability'] for r in result],
                                    probabilities[range(2), range(2)].numpy(), rtol=1e-5)
         # Exercise actual training and safe skip using the inexpensive legacy model.
-        training_config = json.loads(Path('configs/default.json').read_text())
+        training_config = json.loads(Path('checks/fixtures/cnn.json').read_text())
         training_config['cnn'].update(epochs=1, batch_size=2)
         manifest_rows = [{**r, 'split': split, 'sample_id': f"{split}/{r['sample_id']}"}
                          for split in ['train', 'validation'] for r in rows]
