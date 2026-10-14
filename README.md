@@ -4,6 +4,8 @@
 
 Đây là dự án thực nghiệm xử lý ảnh và học sâu phục vụ bài tập lớn. Đầu vào là **ảnh đã cắt vùng biển báo**, đầu ra là một trong **43 lớp biển báo**. Phạm vi hiện tại là phân loại crop biển báo; chưa có chức năng tìm vị trí biển báo trong ảnh đường phố hoặc video.
 
+Bộ kết quả chính hiện dùng **ResNet-18, ba seed, toàn bộ 12.630 ảnh official test**. Đọc [báo cáo nghiên cứu](RESEARCH_REPORT.md), mở [15 slide offline](outputs/resnet18_A/test_full/slides.html) hoặc [demo 43 lớp](outputs/research_evidence/demo/index.html). Các phần CNN nhỏ bên dưới lưu lại quá trình triển khai; không dùng bảng CNN subset cũ để kết luận cải thiện paired của ResNet full-test.
+
 ## 1. Cách hệ thống hoạt động
 
 ```text
@@ -39,7 +41,7 @@ Dự án sử dụng **GTSRB — German Traffic Sign Recognition Benchmark**, g�
 | Subset validation đã sử dụng | **1.290** | Chọn tham số và phương pháp tăng sáng |
 | Subset test đã đánh giá | **430** | 10 ảnh mỗi lớp, dùng chung cho mọi phương pháp |
 
-Hai subset ở cuối được lấy từ validation và test tương ứng. **430 ảnh là số ảnh test đã đánh giá, không phải số ảnh train.**
+Hai subset ở cuối được lấy từ validation và test tương ứng. **430 ảnh là subset test, không phải số ảnh train.** ResNet-A đã đánh giá cả subset và toàn bộ 12.630 ảnh; thí nghiệm ablation dùng riêng subset 430 ảnh.
 
 Ba seed huấn luyện `11, 22, 33` dùng cùng 31.350 ảnh train, khác các yếu tố ngẫu nhiên khi huấn luyện. Không cộng ba lần chạy thành ba tập dữ liệu độc lập.
 
@@ -268,7 +270,10 @@ Lưu ý khi chạy lại:
 ### ResNet-18 pretrained (cấu hình riêng)
 
 `configs/resnet18.json` dùng ImageNet weights, fine-tune toàn bộ mạng với AdamW
-(lr `1e-4`, weight decay `1e-4`, batch 32). Crop/cache/enhancer và PSNR/SSIM vẫn
+(lr `1e-4`, weight decay `1e-4`, batch 32), tối đa 20 epoch. Early stopping theo
+validation Macro-F1: patience 5, min_delta 0.001; reset patience khi tăng hơn 0.001
+so với mốc cải thiện gần nhất. Checkpoint vẫn lưu Macro-F1 cao nhất, kể cả cải thiện nhỏ.
+Crop/cache/enhancer và PSNR/SSIM vẫn
 ở 64×64; model resize toàn crop lên 224×224 rồi normalize ImageNet đúng một lần.
 Không dùng center crop. `configs/default.json` và state-dict CNN cũ vẫn chạy được;
 load checkpoint ResNet không cần mạng. Chỉ train mới cần tải weights lần đầu.
@@ -341,14 +346,57 @@ seed 11 hợp lệ, train 22/33, lưu `validation_summary.json`, rồi tune/free
 đủ 219 lượt trên subset 430 ảnh đã chốt. Training ảnh tối và full official test chưa
 nằm trong job này; baseline so sánh paired vẫn cần artifacts tương ứng.
 
-Job private [GTSRB ResNet18 Protocol A 20261007](https://www.kaggle.com/code/sangtranminh211/gtsrb-resnet18-protocol-a-20261007), phiên bản 2, đã nhận Tesla T4, qua check và smoke đủ 8 enhancer; đang train đầy đủ; log seed 11 epoch 1 ghi validation loss 0,0387 và Macro-F1 97,68%. Chưa có kết quả cuối của ba seed hoặc test. Bộ đóng gói và metadata chạy tại `outputs/resnet18_kaggle/`. Chạy lại bằng Kaggle CLI
-cần output/job mới để giữ kết quả cũ; theo dõi lượt hiện tại:
+Job private [GTSRB ResNet18 Protocol A 20261007](https://www.kaggle.com/code/sangtranminh211/gtsrb-resnet18-protocol-a-20261007), v3, đã train đủ seed 11/22/33 và đánh giá 219/219 lượt trên subset 430 ảnh.
+[Job full-test](https://www.kaggle.com/code/sangtranminh211/gtsrb-resnet18-full-test-12630), v4, đã hoàn thành 219/219 lượt trên toàn bộ 12.630 ảnh official test, dùng lại checkpoint và tham số đã khóa; không train hoặc tune lại.
+
+Ngày 12/10/2026 đã tải archive đầy đủ, kiểm CRC và hash của ba checkpoint, manifest, mã nguồn. Đã đối chiếu ID/nhãn và tính lại Accuracy, Macro-F1, Weighted-F1 từ **2.765.970 dự đoán**, kiểm mean/SD giữa ba seed. Kết quả kiểm chứng: `outputs/resnet18_A/test_full/verification.json`.
+
+### Kết quả ResNet-18 trên full official test
+
+Validation clean: Accuracy **99,57% ± 0,21**, Macro-F1 **99,47% ± 0,31**, Weighted-F1 **99,57% ± 0,21**. Class 19 đạt F1=1 ở cả ba seed, support 30/seed. Checkpoint tốt nhất ở epoch 12/10/3; dừng train ở epoch 17/14/8 cho seed 11/22/33.
+
+Full-test clean: Accuracy **99,15% ± 0,30**, Macro-F1 **98,90% ± 0,40**, Weighted-F1 **99,13% ± 0,32**.
+
+Macro-F1 mean ± sample SD (%) trên **12.630 ảnh**, trung bình noise trong mỗi training seed trước:
+
+| Phương pháp | Tối nhẹ | Tối vừa | Tối nặng |
+|---|---:|---:|---:|
+| identity | 92.00 ± 1.71 | 78.04 ± 1.79 | 59.70 ± 1.64 |
+| gamma | 93.49 ± 1.25 | 79.77 ± 1.85 | 60.48 ± 2.59 |
+| he | 92.31 ± 1.96 | 77.27 ± 3.65 | 56.98 ± 6.48 |
+| clahe | 94.35 ± 1.12 | 82.80 ± 1.46 | 64.31 ± 3.47 |
+| retinex | 82.70 ± 3.12 | 55.71 ± 5.31 | 34.72 ± 5.71 |
+| zero_dce | 89.65 ± 2.37 | 72.41 ± 3.12 | 51.27 ± 4.60 |
+| retinexformer | 82.85 ± 1.80 | 76.28 ± 2.31 | 56.67 ± 1.15 |
+| diffusion | 93.45 ± 1.80 | 83.87 ± 2.97 | 64.88 ± 3.84 |
+
+Validation chọn **diffusion** trước test. Trên full test, diffusion tăng Macro-F1 so identity lần lượt **1,45; 5,83; 5,18 điểm phần trăm** ở mild/medium/severe. CLAHE có F1 test mild cao hơn; đây là quan sát test, không đổi pipeline đã chọn. Diffusion khoảng 226–230 ms/ảnh trên Tesla T4, CLAHE khoảng 0,4 ms/ảnh; đây chỉ là latency enhancer.
+
+Mục tiêu cả Accuracy/Macro-F1/Weighted-F1 >90% đạt với clean và pipeline đã chọn ở mild; chưa đạt ở medium/severe. Không so trực tiếp điểm full-test ResNet với bảng CNN subset cũ như cùng benchmark. Báo cáo đầy đủ: [report.md](outputs/resnet18_A/test_full/report.md), [aggregate.csv](outputs/resnet18_A/test_full/aggregate.csv). Archive và SHA256: `outputs/resnet18_A/download_receipt.json`.
+
+### Ablation, báo cáo và demo đã hoàn tất
+
+[Job ablation/demo](https://www.kaggle.com/code/sangtranminh211/gtsrb-resnet18-ablation-and-demo-20261012) đã COMPLETE. Đã tải archive và kiểm chứng **288 lượt × 430 ảnh**, tính lại 123.840 dự đoán. Bốn biến thể ở mức vừa là gamma-only, gamma + Gaussian, gamma + Poisson và gamma + cả hai loại nhiễu; classifier và tham số enhancer đã khóa từ trước.
+
+MSR đạt Macro-F1 **98,20%** với gamma-only, giảm còn **50,97%** khi thêm cả hai loại nhiễu. Đây là ablation trên subset, không thay thế bảng full-test. Demo có **43 lớp, 1.075 ảnh**, dùng dự đoán thật của cùng classifier seed 11 trên validation. Chọn lớp và mức tối để xem crop gốc, ảnh tối và đủ bảy enhancer; demo chạy offline, không train tại máy cá nhân.
+
+- [Báo cáo đủ bảy phần](RESEARCH_REPORT.md), [bảng ablation](outputs/research_evidence/ablation_report.md), [kiểm chứng](outputs/research_evidence/verification.json).
+- [Slide HTML](outputs/resnet18_A/test_full/slides.html): dùng phím mũi tên để chuyển; có thể in từ trình duyệt.
+- [Demo](outputs/research_evidence/demo/index.html): mở file trực tiếp trong trình duyệt, giữ thư mục `images/` đi cùng.
+- [Raw replay](outputs/replay/verification.json): tái tạo 43 crop từ ảnh nguồn và ba mức suy giảm, đối chiếu pixel chính xác.
+
+Các lệnh kiểm chứng/tạo tài liệu đã chạy tại thư mục gốc:
 
 ```bash
-kaggle kernels status sangtranminh211/gtsrb-resnet18-protocol-a-20261007
-kaggle kernels logs -f sangtranminh211/gtsrb-resnet18-protocol-a-20261007
-kaggle kernels output sangtranminh211/gtsrb-resnet18-protocol-a-20261007 -p outputs/resnet18_kaggle/download
+.venv/bin/python -m scripts.finalize_evidence
+.venv/bin/python -m checks.check_raw_replay
+.venv/bin/python -m scripts.finalize_research outputs/resnet18_A/test_full
+.venv/bin/python -m scripts.write_research_report
+.venv/bin/python -m checks.check_full_test_staging
+.venv/bin/python -m checks.check_finalization
 ```
+
+Nhánh `main` giữ giao thức A: ResNet-18 train trên ảnh gốc, checkpoint cố định để đo tác động của xử lý ảnh. Thí nghiệm train thích nghi và kết quả của nó được giữ riêng trên nhánh `experiment/mixed-lowlight`; không dùng làm kết quả chính của bài tập lớn.
 
 ## 9. Đọc kết quả ở đâu?
 
@@ -370,13 +418,13 @@ Bộ artifact dùng cho bảng kết quả README được lưu riêng tại `ou
 
 ## 10. Giới hạn và hướng mở rộng
 
-- Đánh giá tăng sáng hiện tại dùng **430 ảnh test**, chưa chạy toàn bộ 12.630 ảnh official test.
+- CNN cũ được báo trên subset 430 ảnh; ResNet-18 giao thức A đã đánh giá đủ 12.630 ảnh official test. Hai bảng có phạm vi khác nhau.
 - Thiếu sáng được mô phỏng; chưa đại diện đầy đủ cho camera ban đêm, mưa, lóa đèn và nhòe chuyển động.
 - Hệ thống xử lý crop biển báo, chưa triển khai detector hoặc video thời gian thực.
-- Class 19 vẫn có F1 bằng 0 trong kết quả validation CNN đã ghi nhận; điểm trung bình chưa mô tả hết các lớp yếu.
+- CNN cũ có class 19 F1=0 trong validation; ResNet-A đạt F1=1 ở class này trên clean validation. Cần xem per-class riêng theo mức tối.
 - Đây là thực nghiệm so sánh phương pháp có sẵn; chưa đề xuất thuật toán tăng sáng mới.
 
-Các hướng mở rộng gồm đánh giá toàn test, xử lý mất cân bằng lớp và kiểm tra trên ảnh thiếu sáng thực. Mỗi thay đổi cần được ghi nhận thành thí nghiệm riêng để so sánh rõ ràng.
+Các hướng mở rộng gồm phân tích nhiễu, chi tiết/màu sắc từng lớp và kiểm tra trên ảnh thiếu sáng thực. Mỗi thay đổi cần được ghi nhận thành thí nghiệm riêng để so sánh rõ ràng.
 
 ## 11. Tài liệu liên quan
 

@@ -1,8 +1,8 @@
 # Kế hoạch nâng cấp classifier sang ResNet-18
 
-Ngày lập: 07/10/2026. Nhánh: `resnet18-migration-plan`.
+Ngày lập: 07/10/2026. Nhánh bàn giao: `main`.
 Mốc xuất phát: `b750ed5` trên `main` cục bộ; chưa fetch để xác nhận trạng thái remote.
-Trạng thái cập nhật: đã tích hợp code và hoàn tất pilot local; đang chạy thực nghiệm đầy đủ trên Kaggle (chưa có kết quả ba seed).
+Trạng thái cập nhật 12/10/2026: ResNet-A đã train đủ ba seed, hoàn thành subset và full official test; artifacts đã tải và kiểm chứng. Main giữ phạm vi xử lý ảnh với classifier clean cố định.
 
 ## 1. Mục tiêu và giới hạn
 
@@ -74,7 +74,8 @@ Tạo `configs/resnet18.json` theo cấu trúc hiện có; giữ `configs/defaul
 | learning_rate | 0,0001 |
 | weight_decay | 0,0001 |
 | batch_size | 32 |
-| epochs / patience | 40 / 7 |
+| epochs / patience | 20 / 5 |
+| min_delta (validation Macro-F1) | 0.001 |
 
 Giữ augmentation hiện tại ở lần thử đầu để giảm số yếu tố thay đổi. Chưa thêm scheduler, freeze/unfreeze nhiều giai đoạn, focal loss, sampler hay ensemble. Các trường mới phải có mặc định tương thích CNN cũ: Adam và không thêm weight decay ngoài hành vi hiện tại.
 
@@ -151,18 +152,6 @@ Không đọc test để chọn LR/loss/epoch. Nếu validation vẫn không đ�
 
 Thử nghiệm này so sánh cả gói thay đổi: kiến trúc, pretraining, preprocessing và optimizer. Không quy toàn bộ mức tăng riêng cho residual connection.
 
-### Bước 6 — Thí nghiệm ảnh tối riêng nếu cần
-
-Chỉ triển khai sau khi có kết quả A. Mục đích: tăng khả năng nhận diện ảnh tối, khác câu hỏi tăng sáng có giúp classifier train clean không.
-
-- Đề xuất ban đầu: 50% mẫu clean; 50% còn lại chia đều mild/medium/severe, tạo từ ảnh train bằng degradation hiện có.
-- Dùng RNG train tái lập được, tách seed khỏi bộ evaluation `101,202,303`; validation tối dùng bộ seed validation cố định riêng. Tuyệt đối không tạo dữ liệu train từ validation/test.
-- Chọn checkpoint theo Macro-F1 validation trung bình trên clean + ba mức tối với trọng số bằng nhau; ghi thêm guardrail clean không giảm quá 1 điểm phần trăm so với ResNet-A.
-- Xuất `outputs/resnet18_lowlight/` riêng; lưu training regime trong metadata/protocol/report. Hiện code hard-code nhãn A ở nhiều chỗ: phải sửa đúng các đường freeze/evaluate/report trước khi dùng nhãn thí nghiệm mới.
-- So sánh clean/mild/medium/severe của ResNet-A và ResNet train mixed; không gọi kết quả này là cải thiện do enhancer đơn thuần.
-
-Đây là giai đoạn tiếp theo có điều kiện, không ghép vào lần triển khai ResNet-A đầu tiên. >90% ở severe vẫn cần đo; ảnh mất chi tiết do gamma/noise/clipping có thể không còn đủ thông tin.
-
 ## 5. Danh sách file dự kiến
 
 | File | Trách nhiệm thay đổi |
@@ -219,11 +208,11 @@ Không thay code giữa tune/freeze/evaluate vì source hash đã khóa. Nếu c
 - [x] CNN cũ vẫn load/chạy được; default config giữ hành vi cũ.
 - [x] ResNet load pretrained khi train mới; checkpoint inference hoạt động offline.
 - [x] Train và inference dùng cùng preprocessing; có kiểm tra runnable.
-- [ ] Ba seed hoàn thành, checkpoint đúng epoch validation Macro-F1 tốt nhất.
-- [ ] Run matrix hoàn chỉnh, đủ ID và không bỏ ảnh lỗi.
-- [ ] Accuracy/Macro-F1/Weighted-F1 có mean ± SD, từng seed và từng mức tối.
+- [x] Ba seed hoàn thành, checkpoint đúng epoch validation Macro-F1 tốt nhất.
+- [x] Run matrix hoàn chỉnh, đủ ID và không bỏ ảnh lỗi.
+- [x] Accuracy/Macro-F1/Weighted-F1 có mean ± SD, từng seed và từng mức tối.
 - [x] Báo cáo class 19, confusion matrix và latency classifier riêng.
-- [ ] Kết luận đạt/chưa đạt >90% theo từng phạm vi; không dùng mục tiêu làm số liệu.
+- [x] Kết luận đạt/chưa đạt >90% theo từng phạm vi; không dùng mục tiêu làm số liệu.
 - [x] Artifacts baseline được giữ nguyên; README trỏ đúng kết quả mới.
 
 Hoàn thành tích hợp kỹ thuật không đồng nghĩa đạt mục tiêu thực nghiệm. Nếu metric chưa đạt, bàn giao kết quả và nguyên nhân quan sát được. Quay về baseline bằng `configs/default.json` và checkpoint cũ trong output riêng; không xóa kết quả hoặc dùng lệnh Git phá hủy.
@@ -248,7 +237,18 @@ Hoàn thành tích hợp kỹ thuật không đồng nghĩa đạt mục tiêu t
   `scripts/run_resnet18_kaggle.py` chạy chọn LR trên validation → đủ ba seed → giao thức A.
   Bộ snapshot private và metadata ở `outputs/resnet18_kaggle/`.
 - Các ô về ba seed/219 lượt/mean ± SD còn chờ kết quả Kaggle; chưa tuyên bố đạt 90%.
-  Thí nghiệm mixed low-light và official full-test vẫn là bước sau có điều kiện.
+  Official full-test đã hoàn tất trong cập nhật nghiệm thu bên dưới.
 
 - Kaggle v2 đã qua kiểm tra GPU Tesla T4 và smoke cả 8 enhancer. Log thực seed 11,
   epoch 1: validation loss 0,0387, Macro-F1 0,9768; đây chưa phải kết quả cuối ba seed/test.
+
+- Theo yêu cầu người dùng, dừng Kaggle v2 và đổi cấu hình thành tối đa 20 epoch,
+  patience 5, min_delta 0.001. Checkpoint lưu Macro-F1 cao nhất; patience chỉ reset
+  khi vượt mốc cải thiện gần nhất hơn 0.001. Chưa khởi chạy lại.
+
+## 9. Hoàn tất giao thức A và tách nhánh ngày 14/10/2026
+
+- Nhánh `main` dùng đúng source snapshot clean ResNet-A đã train/evaluate trên Kaggle, tối đa 20 epoch, patience 5, min_delta 0.001.
+- Đã kiểm chứng đủ ba checkpoint, 219 lượt × 12.630 ảnh; bảng PSNR/SSIM, Accuracy/Macro-F1/Weighted-F1, tương quan, bootstrap và ví dụ lỗi nằm trong `outputs/resnet18_A/test_full/`.
+- Báo cáo chính tập trung xử lý ảnh: giữ classifier cố định, chỉ thay enhancer và đo chất lượng ảnh/nhận diện/chi phí. Ablation gamma/nhiễu và demo 43 lớp được giữ trên main.
+- Thí nghiệm thích nghi classifier nằm riêng ở `experiment/mixed-lowlight`, gồm code, bảng kết quả version-control và artifacts lớn tại checkout riêng. Không ghép thí nghiệm này vào giao thức A.

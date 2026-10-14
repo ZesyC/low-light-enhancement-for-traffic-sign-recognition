@@ -1,6 +1,6 @@
 # Định hướng dự án: Tăng cường ảnh thiếu sáng cho nhận diện biển báo giao thông
 
-Ngày lập: 14/09/2026. Trạng thái: đã triển khai pipeline và smoke test; chưa có kết quả thực nghiệm cuối. Xem [README.md](README.md) để chạy.
+Ngày lập: 14/09/2026. Trạng thái: giao thức A với ResNet-18 clean đã hoàn tất full official test và kiểm chứng; main tập trung vào xử lý ảnh. Xem [README.md](README.md) để chạy.
 
 Tài liệu này quy định mục tiêu và giao thức đánh giá xuyên suốt dự án. Xem [DATASETS.md](DATASETS.md) để chọn/tải dữ liệu và [plan.md](plan.md) để triển khai. Mọi thông số ghi “đề xuất” là quyết định thiết kế ban đầu, không phải kết quả hoặc cấu hình tối ưu đã được chứng minh.
 
@@ -140,9 +140,9 @@ Huấn luyện CNN bằng ảnh train gốc; chọn checkpoint bằng validation
 
 Đề xuất ba training seed 11, 22, 33. Huấn luyện ba lần trên cùng split GTSRB, giữ nguyên kiến trúc và thủ tục, chỉ thay seed. Chọn tham số enhancer trên validation bằng trung bình qua seed và mức, sau khi đã chọn checkpoint CNN. Ghi rõ validation được dùng cho hai quyết định này.
 
-### 7.3. Thí nghiệm phụ B: thích nghi dữ liệu
+### 7.3. Phạm vi bàn giao trên main
 
-Chỉ thực hiện sau khi A hoàn tất: train cùng kiến trúc bằng ảnh tối hoặc ảnh được tăng cường, dùng cùng ngân sách/seed/split; test đúng phân phối tương ứng. Đây là đánh giá phối hợp huấn luyện–tiền xử lý; phải báo riêng vì trọng số đã khác. Không trộn các hàng A và B để kết luận tác động riêng của enhancer.
+Main chỉ giữ thí nghiệm A: ResNet-18 train trên ảnh gốc và khóa checkpoint khi đo các phương pháp tăng cường. Thí nghiệm thích nghi classifier được lưu riêng tại nhánh `experiment/mixed-lowlight`, không dùng trong bảng kết quả chính hoặc kết luận tác động riêng của xử lý ảnh.
 
 ## 8. Chỉ số và cách tính
 
