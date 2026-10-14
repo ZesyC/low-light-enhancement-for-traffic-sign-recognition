@@ -1,8 +1,8 @@
-.venv/
+.venv
 __pycache__/
 *.pyc
-data/
+data
 outputs/
-external/
+external
 .DS_Store
 BASELINE_RESEARCH.md

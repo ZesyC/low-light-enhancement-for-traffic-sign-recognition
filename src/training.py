@@ -94,7 +94,7 @@ def train(root, config, seed, device, output, per_class=None, epochs=None):
     model = make_cnn(cfg, pretrained=True).to(device)
     optimizer_class = torch.optim.AdamW if cfg['optimizer'] == 'adamw' else torch.optim.Adam
     optimizer = optimizer_class(model.parameters(), lr=cfg['learning_rate'], weight_decay=cfg['weight_decay'])
-    history, best, stale = [], -1, 0
+    history, best, stopping_best, stale = [], -1, -1, 0
     write_json(output / f'train_{seed}.json', dict(metadata, status='running'))
     for epoch in range(1, count_epochs+1):
         synchronize(device)
@@ -124,8 +124,12 @@ def train(root, config, seed, device, output, per_class=None, epochs=None):
                             'weighted_f1': score['weighted_f1']})
             if split == 'validation':
                 print(f"seed={seed} epoch={epoch} val_loss={total_loss/len(labels):.4f} macro_f1={score['macro_f1']:.4f}", flush=True)
+                if score['macro_f1'] > stopping_best + cfg['min_delta']:
+                    stopping_best, stale = score['macro_f1'], 0
+                else:
+                    stale += 1
                 if score['macro_f1'] > best:
-                    best, stale = score['macro_f1'], 0
+                    best = score['macro_f1']
                     temporary = checkpoint.with_suffix('.tmp')
                     torch.save({'state_dict': model.state_dict(), 'seed': seed, 'epoch': epoch,
                                 'macro_f1': best, 'manifest_sha256': digest(manifest),
@@ -133,8 +137,6 @@ def train(root, config, seed, device, output, per_class=None, epochs=None):
                                 'environment': metadata['environment']}, temporary)
                     temporary.replace(checkpoint)
                     write_json(output / f'validation_{seed}.json', score)
-                else:
-                    stale += 1
         synchronize(device)
         for entry in history[-2:]:
             entry['epoch_seconds'] = time.perf_counter() - epoch_start
@@ -144,6 +146,7 @@ def train(root, config, seed, device, output, per_class=None, epochs=None):
                                           else torch.mps.driver_allocated_memory() if device.type == 'mps' else 0)
         write_csv(output / f'learning_{seed}.csv', history)
         if stale >= cfg['patience']:
+            print(f"seed={seed} early stop at epoch={epoch}: patience={stale}, min_delta={cfg['min_delta']}", flush=True)
             break
     write_json(output / f'train_{seed}.json', dict(metadata, status='completed',
                checkpoint_sha256=digest(checkpoint), best_macro_f1=best))

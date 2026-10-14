@@ -2,19 +2,23 @@
 
 Ngày lập: 14/09/2026. Khung đề xuất: 8 tuần; điều chỉnh theo hạn nộp và tài nguyên thực tế. Pipeline đã được cài đặt và kiểm tra kỹ thuật; các checkbox dưới đây vẫn là tiêu chí nghiệm thu nghiên cứu, không tự động hoàn thành chỉ vì đã có code. Xem README.md.
 
+Cập nhật 12/10/2026: kết quả chính ResNet-A đã kiểm chứng 219 lượt × 12.630 ảnh; ablation đã kiểm chứng 288 lượt × 430 ảnh; báo cáo, 15 slide HTML và demo validation 43 lớp đã có. [RESEARCH_REPORT.md](RESEARCH_REPORT.md) liên kết bằng chứng. Các mục CNN nhỏ cũ được giữ như lịch sử, không mặc định artifact cũ hợp lệ. Nhánh main chỉ giữ giao thức A với ResNet clean cố định; thí nghiệm thích nghi classifier được tách sang nhánh experiment/mixed-lowlight và không thuộc báo cáo chính.
+
 Đọc [PROJECT_GUIDE.md](PROJECT_GUIDE.md) trước để nắm giao thức, [DATASETS.md](DATASETS.md) để tải và kiểm kê GTSRB. Dự án chỉ dùng GTSRB đúng mô tả đề bài, giữ đủ 43 lớp và official test.
 
 ## 1. Kết quả phải bàn giao
 
 - [ ] Dữ liệu GTSRB có nguồn, phiên bản, nhãn, điều kiện sử dụng và manifest.
-- [ ] Train/validation/test tách theo nhóm, không rò rỉ ảnh gốc/biến thể.
-- [ ] Suy giảm gamma + Gaussian + Poisson ở ba mức đã khóa.
-- [ ] CNN chung kiến trúc, checkpoint và log huấn luyện.
-- [ ] Clean, dark và đủ bảy phương pháp tăng cường thực chạy.
-- [ ] Bảng PSNR, SSIM, Accuracy, Macro-F1 trên cùng tập mẫu.
-- [ ] Phân tích tương quan, chi phí, bất định và ví dụ thất bại.
-- [ ] Quy trình tiền xử lý chọn trên validation, kiểm chứng trên test.
-- [ ] Báo cáo, slide và hướng dẫn chạy lại.
+- [x] Train/validation/test tách theo nhóm, không rò rỉ ảnh gốc/biến thể; cách ly track trùng pixel, ghi giới hạn thiếu track official test.
+- [x] Suy giảm gamma + Gaussian + Poisson ở ba mức đã khóa.
+- [x] Classifier ResNet-18 chung kiến trúc, checkpoint và log ba seed huấn luyện.
+- [x] Clean, dark và đủ bảy phương pháp tăng cường thực chạy.
+- [x] Bảng PSNR, SSIM, Accuracy, Macro-F1 và Weighted-F1 trên cùng tập mẫu.
+- [x] Phân tích tương quan, chi phí, bất định và ví dụ thất bại.
+- [x] Quy trình tiền xử lý chọn trên validation, kiểm chứng trên test.
+- [x] Báo cáo, slide và hướng dẫn chạy lại.
+
+Mục nguồn/điều kiện sử dụng còn cần tổng hợp quyền tái phân phối; archive, checksum và manifest đã có. Không đánh dấu quyền sử dụng chỉ từ giấy phép loader.
 
 ## 2. Trình tự và điểm kiểm soát
 
@@ -151,13 +155,13 @@ Một snapshot cấu hình duy nhất mô tả được ma trận test. Có đ�
 
 ### Việc cần làm
 
-- [ ] Chạy đủ phương pháp trên GTSRB, ba mức và các seed đã khóa.
-- [ ] Tính PSNR/SSIM từng ảnh so đúng canonical reference.
-- [ ] Tính Accuracy/Macro-F1 và lưu class prediction, xác suất lớp thật, support từng lớp.
-- [ ] Báo clean baseline riêng; không nhân bản clean theo noise seed.
-- [ ] Đo thời gian enhancer riêng CNN, có thiết bị/batch size/precision.
-- [ ] Kiểm tra mỗi bảng so sánh có cùng tập sample_id, không chỉ cùng số lượng.
-- [ ] Với run lỗi, sửa lỗi kỹ thuật và chạy lại cùng cấu hình; nếu thay phương pháp/tham số, ghi phiên bản và mức độ ảnh hưởng tới tính độc lập của test.
+- [x] Chạy đủ phương pháp trên GTSRB, ba mức và các seed đã khóa.
+- [x] Tính PSNR/SSIM từng ảnh so đúng canonical reference.
+- [x] Tính Accuracy/Macro-F1 và lưu class prediction, xác suất lớp thật, support từng lớp.
+- [x] Báo clean baseline riêng; không nhân bản clean theo noise seed.
+- [x] Đo thời gian enhancer riêng CNN, có thiết bị/batch size/precision.
+- [x] Kiểm tra mỗi bảng so sánh có cùng tập sample_id, không chỉ cùng số lượng.
+- [x] Với run lỗi, sửa lỗi kỹ thuật và chạy lại cùng cấu hình; nếu thay phương pháp/tham số, ghi phiên bản và mức độ ảnh hưởng tới tính độc lập của test.
 
 ### Kiểm tra runnable cần để lại
 
@@ -171,16 +175,16 @@ Bảng kết quả không có số giả hoặc ô trống không giải thích.
 
 ### Việc cần làm
 
-- [ ] Vẽ đường Accuracy/Macro-F1 theo mức suy giảm và phương pháp.
-- [ ] Vẽ scatter PSNR/SSIM–Accuracy/Macro-F1 trên GTSRB theo từng mức.
-- [ ] Tính Pearson/Spearman, ghi số điểm và giới hạn phụ thuộc giữa các điểm.
-- [ ] Tính delta so identity cùng điều kiện; phân tích độ nhạy seed.
-- [ ] Paired bootstrap theo nhóm cho delta của pipeline đã chọn với identity.
-- [ ] Chạy ablation bốn tổ hợp suy giảm ở mức vừa nếu ngân sách cho phép; báo riêng bảng chính.
-- [ ] Phân tích F1 lớp hiếm và các nhầm lẫn giữa biển giống nhau.
-- [ ] Chọn ví dụ “sáng hơn nhưng sai”, “tăng cường giúp đúng”, “không phục hồi được”; lưu ID.
-- [ ] Đối chiếu pipeline đã chọn từ validation với kết quả test, kể cả khi không thắng.
-- [ ] Viết giới hạn giữa thiếu sáng mô phỏng và ảnh đêm thực tế.
+- [x] Vẽ đường Accuracy/Macro-F1 theo mức suy giảm và phương pháp.
+- [x] Vẽ scatter PSNR/SSIM–Accuracy/Macro-F1 trên GTSRB theo từng mức.
+- [x] Tính Pearson/Spearman, ghi số điểm và giới hạn phụ thuộc giữa các điểm.
+- [x] Tính delta so identity cùng điều kiện; phân tích độ nhạy seed.
+- [x] Paired bootstrap theo nhóm cho delta của pipeline đã chọn với identity.
+- [x] Chạy ablation bốn tổ hợp suy giảm ở mức vừa nếu ngân sách cho phép; báo riêng bảng chính.
+- [x] Phân tích F1 lớp hiếm và các nhầm lẫn giữa biển giống nhau.
+- [x] Chọn ví dụ “sáng hơn nhưng sai”, “tăng cường giúp đúng”, “không phục hồi được”; lưu ID.
+- [x] Đối chiếu pipeline đã chọn từ validation với kết quả test, kể cả khi không thắng.
+- [x] Viết giới hạn giữa thiếu sáng mô phỏng và ảnh đêm thực tế.
 
 ### Nghiệm thu
 
@@ -188,14 +192,14 @@ Trả lời đủ RQ1–RQ5 bằng số liệu và hình. Không tuyên bố “
 
 ## 11. Giai đoạn 9 — Báo cáo và tái lập
 
-- [ ] Viết theo bố cục ở PROJECT_GUIDE.md, trích nguồn dataset và từng mô hình.
-- [ ] Bảng chính chỉ chứa phương pháp chạy trên cùng tập ảnh; bảng toàn test/subset tách rõ.
-- [ ] Chú thích đơn vị, số mẫu, seed, metric và chiều tốt/xấu trên mọi bảng/hình.
-- [ ] Lưu configs, manifests, dependency versions, checkpoint hashes, metrics, predictions và figures.
-- [ ] Viết README với lệnh thực đã chạy; không trình bày lệnh dự kiến như đã tồn tại.
-- [ ] Tái chạy từ raw trên một subset nhỏ và đối chiếu output/metric theo dung sai đã ghi.
-- [ ] Chuẩn bị demo: ảnh nguồn → thiếu sáng → các enhancer → dự đoán cùng CNN.
-- [ ] Soát mô tả đề bài: GTSRB, ba mức, bảy phương pháp, PSNR/SSIM, Accuracy/F1, tương quan, quy trình.
+- [x] Viết theo bố cục ở PROJECT_GUIDE.md, trích nguồn dataset và từng mô hình.
+- [x] Bảng chính chỉ chứa phương pháp chạy trên cùng tập ảnh; bảng toàn test/subset tách rõ.
+- [x] Chú thích đơn vị, số mẫu, seed, metric và chiều tốt/xấu trên mọi bảng/hình.
+- [x] Lưu configs, manifests, dependency versions, checkpoint hashes, metrics, predictions và figures.
+- [x] Viết README với lệnh thực đã chạy; không trình bày lệnh dự kiến như đã tồn tại.
+- [ ] Tái chạy từ raw trên một subset nhỏ và đối chiếu output/metric theo dung sai đã ghi. Đã đối chiếu 43 crop và ba mức tối chính xác; chưa replay toàn bộ inference/metric từ raw.
+- [x] Chuẩn bị demo: ảnh nguồn → thiếu sáng → các enhancer → dự đoán cùng CNN.
+- [x] Soát mô tả đề bài: GTSRB, ba mức, bảy phương pháp, PSNR/SSIM, Accuracy/F1, tương quan, quy trình.
 
 ## 12. Quản lý rủi ro cụ thể
 
@@ -208,7 +212,7 @@ Trả lời đủ RQ1–RQ5 bằng số liệu và hình. Không tuyên bố “
 | Diffusion quá chậm | Pilot vượt ngân sách | Subset cố định cho tất cả phương pháp; không bỏ diffusion |
 | PSNR cao nhưng CNN kém | Delta chất lượng dương, delta F1 âm | Phân tích chi tiết hình/màu, giữ nguyên kết quả |
 | Chỉ một seed vì thiếu tài nguyên | Không đủ budget đã dự kiến | Ghi giới hạn, ưu tiên đủ phương pháp/mức/tập chung trước mở rộng |
-| Không đủ thời gian chạy ma trận | Ma trận chưa chạy đủ | Giảm ablation/thí nghiệm B trước; giữ đủ phương pháp trên tập mẫu chung |
+| Không đủ thời gian chạy ma trận | Ma trận chưa chạy đủ | Giảm ablation bổ sung trước; giữ đủ phương pháp trên tập mẫu chung |
 
 ## 13. Nhật ký quyết định
 

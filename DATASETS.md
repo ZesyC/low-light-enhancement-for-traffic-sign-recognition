@@ -28,6 +28,8 @@ Nguồn hiện dùng là [archive do nhóm tác giả GTSRB công bố trên ERD
 
 Ghi rõ tên archive đã dùng; không trộn các bản đóng gói rồi giả định cấu trúc giống nhau. Kiểm tra điều kiện sử dụng và yêu cầu trích dẫn từ nguồn dữ liệu; không suy giấy phép ảnh từ giấy phép thư viện tải ảnh.
 
+Kiểm tra ngày 12/10/2026: metadata [archive tác giả trên ERDA](https://sid.erda.dk/public/archives/daaeac0d7ce1152aea9b61d9f1e19370/published-archive.html) xác nhận các archive final train/test và hai bài báo cần trích dẫn. README trong archive test yêu cầu chỉ dùng official test để đánh giá cuối, dùng final training để train; pipeline tuân thủ cách phân chia này. Metadata/README đã kiểm tra không nêu giấy phép tái phân phối ảnh cụ thể, nên trạng thái quyền tái phân phối vẫn **chưa xác nhận từ nguồn tác giả**; không gán CC0 từ thông tin mirror. Checksum/ngày tải lưu ở `data/manifests/gtsrb_sources.json`.
+
 ### Các bước tiếp nhận
 
 1. Tải đủ ba thành phần, lưu archive gốc tại `data/raw/gtsrb/`.
