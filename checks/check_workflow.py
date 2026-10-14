@@ -84,6 +84,6 @@ def check(config_path):
 
 
 if __name__ == '__main__':
-    baseline = check('configs/default.json')
+    baseline = check('checks/fixtures/cnn.json')
     resnet = check('configs/resnet18.json')
     assert baseline == resnet, 'Classifier changed enhanced pixels or image metrics'

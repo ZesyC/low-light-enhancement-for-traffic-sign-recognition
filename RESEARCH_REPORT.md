@@ -160,7 +160,7 @@ Hướng tiếp theo là phân tích tác động của xử lý ảnh lên nhi�
 
 ## Tài liệu và bàn giao
 
-- [Hướng dẫn chạy](README.md), [kế hoạch](plan.md), [dữ liệu](DATASETS.md).
+- [Hướng dẫn chạy](README.md), [giao thức](PROJECT_GUIDE.md), [dữ liệu](DATASETS.md).
 - [Slides HTML offline](outputs/resnet18_A/test_full/slides.html), [demo validation 43 lớp](outputs/research_evidence/demo/index.html).
 - [GTSRB: Stallkamp và cộng sự, 2012](https://benchmark.ini.rub.de/gtsrb_news.html).
 - [Zero-DCE: Guo và cộng sự, CVPR 2020](https://openaccess.thecvf.com/content_CVPR_2020/html/Guo_Zero-Reference_Deep_Curve_Estimation_for_Low-Light_Image_Enhancement_CVPR_2020_paper.html).

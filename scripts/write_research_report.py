@@ -157,7 +157,7 @@ def build(root=Path('.')):
               'Hướng tiếp theo là phân tích tác động của xử lý ảnh lên nhiễu, màu sắc và chi tiết biển báo, sau đó kiểm tra dữ liệu đêm thực. '
               'Mục tiêu >90% ở mọi mức là mục tiêu cần đo, không phải kết quả đã đạt.', '',
               '## Tài liệu và bàn giao', '',
-              '- [Hướng dẫn chạy](README.md), [kế hoạch](plan.md), [dữ liệu](DATASETS.md).',
+              '- [Hướng dẫn chạy](README.md), [giao thức](PROJECT_GUIDE.md), [dữ liệu](DATASETS.md).',
               '- [Slides HTML offline](outputs/resnet18_A/test_full/slides.html), '
               '[demo validation 43 lớp](outputs/research_evidence/demo/index.html).',
               '- [GTSRB: Stallkamp và cộng sự, 2012](https://benchmark.ini.rub.de/gtsrb_news.html).',

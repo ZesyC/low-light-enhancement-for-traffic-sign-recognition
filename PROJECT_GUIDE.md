@@ -2,7 +2,7 @@
 
 Ngày lập: 14/09/2026. Trạng thái: giao thức A với ResNet-18 clean đã hoàn tất full official test và kiểm chứng; main tập trung vào xử lý ảnh. Xem [README.md](README.md) để chạy.
 
-Tài liệu này quy định mục tiêu và giao thức đánh giá xuyên suốt dự án. Xem [DATASETS.md](DATASETS.md) để chọn/tải dữ liệu và [plan.md](plan.md) để triển khai. Mọi thông số ghi “đề xuất” là quyết định thiết kế ban đầu, không phải kết quả hoặc cấu hình tối ưu đã được chứng minh.
+Tài liệu này quy định mục tiêu và giao thức đánh giá xuyên suốt dự án. Xem [DATASETS.md](DATASETS.md) để chọn/tải dữ liệu và [README.md](README.md) để chạy. Mọi thông số ghi “đề xuất” là quyết định thiết kế ban đầu, không phải kết quả hoặc cấu hình tối ưu đã được chứng minh.
 
 ## 1. Mục tiêu và phạm vi
 
@@ -124,15 +124,13 @@ Nguồn mô hình học sâu:
 
 ## 7. CNN và giao thức so sánh công bằng
 
-### 7.1. Kiến trúc đề xuất
+### 7.1. Classifier dùng để kiểm chứng xử lý ảnh
 
-Một CNN nhỏ tự huấn luyện để tránh thêm ảnh hưởng pretraining:
+Thí nghiệm chính dùng ResNet-18 khởi tạo từ ImageNet, fine-tune trên ảnh train gốc với đầu ra 43 lớp. Enhancer vẫn xử lý crop RGB 64×64; classifier resize toàn crop lên 224×224 và normalize ImageNet đúng một lần. Đầu ra logits có shape [B,43], loss cross-entropy.
 
-`[B,3,64,64] → Conv3×3(32,pad=1)+ReLU+MaxPool2 → Conv3×3(64,pad=1)+ReLU+MaxPool2 → Conv3×3(128,pad=1)+ReLU → AdaptiveAvgPool(1) → Flatten → Linear(128,43)`.
+Cấu hình đã chạy nằm trong `configs/resnet18.json`: AdamW, learning rate 1e-4, batch size 32, tối đa 20 epoch, patience 5, min_delta 0.001. Checkpoint giữ Macro-F1 validation clean cao nhất; bộ đếm dừng sớm chỉ reset khi cải thiện vượt min_delta. Train dùng augmentation nhẹ trong `src/training.py`, không có chế độ mixed low-light trên main. Không flip biển theo chiều ngang vì có thể đổi ý nghĩa.
 
-Đầu ra logits có shape [B,43]; nhãn có shape [B] kiểu số nguyên. Cross-entropy nhận logits trực tiếp. Đề xuất Adam, learning rate 1e-3, batch size 64, tối đa 40 epoch, dừng sớm sau 7 epoch không cải thiện Macro-F1 validation. Chọn checkpoint tốt nhất trên validation. Các giá trị này cần pilot, không bảo đảm Accuracy cụ thể.
-
-Nếu chuẩn hóa theo mean/std, chỉ ước lượng từ ảnh train gốc rồi dùng cố định mọi điều kiện. Không flip biển theo chiều ngang vì có thể đổi ý nghĩa. Baseline ban đầu không augmentation độ sáng để giữ cách diễn giải rõ.
+CNN nhỏ chỉ còn phục vụ kiểm tra kỹ thuật nhanh qua `checks/fixtures/cnn.json`; không dùng điểm của nó làm kết quả chính hoặc so trực tiếp với ResNet full-test.
 
 ### 7.2. Thí nghiệm chính A: khóa trọng số
 
@@ -189,27 +187,27 @@ Không xây bộ tự nhận biết mức tối ở giai đoạn chính. Một c
 
 Kết luận chỉ áp dụng cho loại biển, split, mô phỏng, độ phân giải và CNN đã kiểm chứng. Chưa đủ để khẳng định hoạt động tốt trên camera ngoài đường ban đêm, chói đèn, mưa, motion blur hoặc đối tượng chưa có trong tập lớp.
 
-## 11. Tổ chức triển khai dự kiến
+## 11. Tổ chức source hiện tại
 
-Mã đã được triển khai trong `src/`, CLI tại `scripts/run.py`, kiểm tra tại `checks/`. Cấu trúc định hướng ban đầu:
+Mã được triển khai trong `src/`, CLI tại `scripts/run.py`, kiểm tra tại `checks/`:
 
 ```text
 PROJECT_GUIDE.md
 DATASETS.md
-plan.md
-configs/                  # Split, degradation, enhancer, CNN, evaluation
+RESEARCH_REPORT.md
+configs/resnet18.json      # Thí nghiệm chính: dữ liệu, enhancer, ResNet, evaluation
 src/data.py               # Manifest, split, crop, loader
 src/degradation.py        # Gamma và hai loại nhiễu
 src/enhancement.py        # Phương pháp cổ điển và adapter
-src/model.py              # Một CNN dùng chung kiến trúc
+src/model.py              # ResNet-18 và CNN nhỏ cho kiểm tra kỹ thuật
 scripts/                  # Prepare, train, enhance, evaluate, report
 checks/                   # Các kiểm tra nhỏ có thể chạy độc lập
-notebooks/                # EDA và xem kết quả; logic chính nằm ở src
+checks/fixtures/cnn.json   # Cấu hình cho test nhanh, không phải thí nghiệm chính
 data/                     # Raw, manifests, processed, cache; không commit ảnh
 outputs/                  # Checkpoint, predictions, metrics, figures, logs
 ```
 
-Tạo thư mục khi bắt đầu phần việc tương ứng; chưa cần scaffold toàn bộ. Dùng Python/NumPy/OpenCV cho xử lý ảnh, PyTorch cho CNN và mô hình học sâu, scikit-image/scikit-learn cho metric, matplotlib cho hình. Ghim phiên bản sau smoke test; mô hình bên ngoài có thể cần môi trường riêng và trao đổi ảnh lossless. Không nâng/hạ toàn bộ môi trường chỉ để chạy một repo cũ.
+Dùng Python/NumPy/OpenCV cho xử lý ảnh, PyTorch cho classifier và mô hình học sâu, scikit-image/scikit-learn cho metric, matplotlib cho hình. Môi trường local được ghi ở requirements và artifact giữ phiên bản Kaggle; không cài bộ torch macOS đè lên CUDA của Kaggle.
 
 Bảng tổng hợp tối thiểu: `dataset, split, protocol, subset_id, condition, method, config_id, train_seed, noise_seed, n_images, accuracy, macro_f1, psnr_mean, ssim_mean, latency_ms`.
 

@@ -2,7 +2,7 @@
 
 Ngày cập nhật: 14/09/2026. Phạm vi: chỉ sử dụng **German Traffic Sign Recognition Benchmark (GTSRB)** đúng mô tả bài tập lớn. Đã có mã chuẩn bị và kiểm kê dữ liệu; xem README.md và `data/manifests/audit.json` cho trạng thái chạy thực tế.
 
-Xem [PROJECT_GUIDE.md](PROJECT_GUIDE.md) để nắm giao thức thí nghiệm và [plan.md](plan.md) để triển khai.
+Xem [PROJECT_GUIDE.md](PROJECT_GUIDE.md) để nắm giao thức thí nghiệm và [README.md](README.md) để chạy.
 
 ## 1. Vì sao dùng GTSRB?
 
