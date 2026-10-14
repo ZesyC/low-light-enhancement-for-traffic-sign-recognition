@@ -154,7 +154,6 @@ def run_ablation(ROOT, CONFIG, selection, CHECKPOINTS, DEVICE, TEST_ROWS):
     MANIFEST = ROOT/'data/manifests/gtsrb_samples.csv'
     selected_config = deepcopy(CONFIG)
     selected_config['enhancers'].update(selection['enhancers'])
-    from copy import deepcopy
     from scripts.run_research_evidence_kaggle import degradation_variants
     EVIDENCE=ROOT/'outputs/research_evidence'
     variants=degradation_variants(CONFIG['conditions']['medium'])
