@@ -13,3 +13,7 @@ BASELINE_RESEARCH.md
 /PROJECT_GUIDE.md
 /DATASETS.md
 /.claude/
+
+# Local report and presentation sources
+/report/latex/
+/report/slides/

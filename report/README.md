@@ -2,7 +2,8 @@
 
 Đề tài: **Khảo sát ảnh hưởng của xử lý ảnh đến hiệu năng nhận dạng biển báo giao thông trong điều kiện thiếu sáng.**
 
-- `bao_cao.pdf`: bản PDF hoàn chỉnh.
+- [Báo cáo PDF](bao_cao.pdf): bản báo cáo hoàn chỉnh.
+- [Slide PDF](thuyet_trinh.pdf): bản thuyết trình.
 - `latex/main.tex`: tài liệu chính, biên dịch bằng XeLaTeX.
 - `latex/sections/`: nội dung tiếng Việt chia theo phần.
 - `latex/images/`: hình thực nghiệm trích từ notebook ResNet-18 và biểu đồ giải tích.
@@ -10,6 +11,8 @@
 - `evidence/`: CSV nguồn và `provenance.json` ghi SHA-256, vị trí cell, giới hạn kiểm chứng.
 - `build_assets.py`: trích xuất và tổng hợp lại kết quả ResNet-18, không đọc kết quả classifier cũ.
 - `report_mau.pdf`: mẫu gốc được giữ nguyên.
+
+`latex/` và `slides/` được giữ riêng ở local và đã loại khỏi Git. Clone repo chỉ có các bản PDF cùng tài liệu/số liệu được theo dõi; hướng dẫn biên dịch dưới đây cần bộ nguồn local.
 
 ## Biên dịch trên Windows PowerShell
 

@@ -57,8 +57,8 @@ Bảng đầy đủ nằm trong [CSV full-test](report/evidence/resnet18_fulltes
 | [configs/resnet18.json](configs/resnet18.json) | Cấu hình thí nghiệm chính |
 | [Notebook đã thực thi](notebooks/GTSRB_LLIE_Complete_Pipeline_Executed.ipynb) | Pipeline và kết quả subset/ablation có output |
 | [Báo cáo PDF](report/bao_cao.pdf) | Nội dung và phân tích đầy đủ |
-| [report/](report/README.md) | Nguồn LaTeX, hình, bảng và hướng dẫn biên dịch |
-| [Slide PDF](report/slides/thuyet_trinh.pdf) | Tài liệu thuyết trình |
+| [report/](report/README.md) | Báo cáo, slide PDF, số liệu và hướng dẫn biên dịch local |
+| [Slide PDF](report/thuyet_trinh.pdf) | Tài liệu thuyết trình |
 
 Cài các thư viện để làm việc với mã nguồn:
 
