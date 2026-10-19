@@ -1,5 +1,14 @@
 \begin{titlepage}
 \thispagestyle{empty}
+% Draw the cover frame at shipout so the text layout stays unchanged.
+\AddToHookNext{shipout/background}{%
+  \begin{tikzpicture}[remember picture,overlay]
+    \draw[line width=0.8pt]
+      ([xshift=20mm,yshift=-14mm]current page.north west)
+      rectangle
+      ([xshift=-10mm,yshift=14mm]current page.south east);
+  \end{tikzpicture}%
+}
 \begin{center}
 \vspace*{-13mm}
 {\fontsize{14bp}{17bp}\selectfont\bfseries ĐẠI HỌC PHENIKAA\par}
@@ -19,7 +28,7 @@
 GIAO THÔNG TRONG ĐIỀU KIỆN THIẾU SÁNG\par}
 \end{center}
 \vspace{10mm}
-\hspace*{8mm}Giảng viên hướng dẫn: Nguyễn Ngọc Giang\par
+\hspace*{8mm}Giảng viên hướng dẫn: TS. Nguyễn Ngọc Giang\par
 \vspace{6mm}
 {\fontsize{12bp}{17bp}\selectfont
 24100093 -- Kiều Thị Thu Trang -- 24100093@st.phenikaa-uni.edu.vn\par

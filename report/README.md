@@ -29,9 +29,8 @@ Hai lượt biên dịch cập nhật mục lục, số hình/bảng và tham ch
 
 ## Định dạng và nguồn
 
-Mẫu có 31 trang, A4, một cột, Times New Roman; phần thân chủ yếu 12,5 pt PDF, khoảng cách dòng khoảng 14,4 pt. Báo cáo dùng 12,5 bp/14,4 bp trong XeLaTeX để tương đương đơn vị PDF; lề trái 30 mm, phải 20 mm, trên 32 mm, dưới 30 mm; căn đều, không thụt đầu dòng, tiêu đề đậm đánh số, số trang giữa chân trang. Bìa giữ trường, nhóm 3 và thành viên của mẫu; môn đổi thành Xử lý ảnh và giảng viên hướng dẫn là Nguyễn Ngọc Giang.
+Mẫu có 31 trang, A4, một cột, Times New Roman; phần thân chủ yếu 12,5 pt PDF, khoảng cách dòng khoảng 14,4 pt. Báo cáo dùng 12,5 bp/14,4 bp trong XeLaTeX để tương đương đơn vị PDF; lề trái 30 mm, phải 20 mm, trên 32 mm, dưới 30 mm; căn đều, không thụt đầu dòng, tiêu đề đậm đánh số, số trang giữa chân trang. Bìa có khung viền đen, giữ trường, nhóm 3 và thành viên của mẫu; môn đổi thành Xử lý ảnh và giảng viên hướng dẫn là TS. Nguyễn Ngọc Giang.
 
 Toàn bộ số liệu nhận dạng dùng **ResNet-18**. Bộ 219 lượt × 430 ảnh và 288 lượt ablation lấy từ notebook đã thực thi; script tính lại tổng hợp 219 bản ghi và tương quan. Kiểm chứng mức dự đoán từng ảnh là kết quả được ghi trong notebook, không phải chạy lại tại máy này. Full-test 12.630 ảnh lấy từ README và được tách rõ, không ghép với PSNR/SSIM của subset. Không sử dụng kết quả hoặc hình từ thí nghiệm classifier cũ.
 
 Các phương pháp: Gamma, HE, CLAHE, MSR giản lược, Zero-DCE, Retinexformer, Wavelet-based Diffusion; Identity là đối chứng. PSNR/SSIM đo tại 64×64; ResNet-18 nhận ảnh 224×224 sau resize và normalize. Mục tiêu lựa chọn là Macro-F1 validation; không lấy kết quả test để chọn lại pipeline.
-
