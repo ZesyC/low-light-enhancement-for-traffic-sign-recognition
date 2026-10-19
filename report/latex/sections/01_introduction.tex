@@ -31,7 +31,7 @@ Trong phạm vi triển khai, đầu vào là vùng ảnh đã chứa biển bá
 \subsection{Các hướng tiếp cận và giải pháp khảo sát}
 Nhóm phương pháp truyền thống tác động trực tiếp lên cường độ hoặc phân bố mức xám. Gamma điều chỉnh phi tuyến từng điểm ảnh; HE phân phối lại histogram toàn cục; CLAHE xử lý theo vùng; Retinex ước lượng quan hệ giữa thành phần chiếu sáng và phản xạ. Những phương pháp này có ưu điểm dễ giải thích, ít tham số và chi phí tính toán tương đối thấp.
 
-Nhóm phương pháp học sâu sử dụng thông tin đã học để điều chỉnh hoặc phục hồi ảnh. Zero-DCE ước lượng đường cong tăng sáng, Retinexformer kết hợp biểu diễn chiếu sáng với Transformer, còn phương pháp diffusion được khảo sát thực hiện phục hồi có điều kiện trong miền wavelet. Dự án sử dụng trọng số công bố của tác giả, không huấn luyện lại các bộ tăng cường trên GTSRB~\cite{zerodce,retinexformer,diffusion}.
+Nhóm phương pháp học sâu sử dụng thông tin đã học để điều chỉnh hoặc phục hồi ảnh. Zero-DCE ước lượng đường cong tăng sáng, Retinexformer kết hợp biểu diễn chiếu sáng với Transformer, còn phương pháp diffusion được khảo sát thực hiện phục hồi có điều kiện trong miền wavelet. Dự án sử dụng trọng số công bố của tác giả, không huấn luyện lại các bộ tăng cường trên GTSRB~\cite{zerodce}, \cite{retinexformer}, \cite{diffusion}.
 
 Giải pháp của bài tập lớn không giả định một nhóm phương pháp luôn tốt hơn nhóm còn lại. Tất cả được đánh giá trên cùng ảnh suy giảm, cùng tập mẫu và cùng các checkpoint ResNet-18. Mốc đối chứng là \term{Identity}, tức ảnh tối giữ nguyên. Ảnh gốc \term{Clean} được dùng làm tham chiếu và kiểm tra hiệu năng nhận dạng khi chưa áp dụng mô hình suy giảm.
 
