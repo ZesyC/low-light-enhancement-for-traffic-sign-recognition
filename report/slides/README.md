@@ -1,6 +1,6 @@
 # Slide thuyết trình LaTeX Beamer
 
-24 slide tiếng Việt, tỉ lệ 16:9, phù hợp khoảng 18–20 phút. Thiết kế theo phong cách bài giảng: nền trắng, dải tiêu đề xám nhạt, tiêu đề và header bảng màu xanh dương, footer ghi nhóm, môn học và số trang. Nội dung tập trung xử lý ảnh, toàn bộ kết quả nhận dạng dùng ResNet-18.
+24 slide tiếng Việt, tỉ lệ 16:9, phù hợp khoảng 18–20 phút. Thiết kế theo phong cách bài giảng: nền trắng, dải tiêu đề xám nhạt, tiêu đề và header bảng màu xanh dương, footer mỏng ghi nhóm, trích dẫn paper (nếu có) và số trang. Nội dung tập trung xử lý ảnh, toàn bộ kết quả nhận dạng dùng ResNet-18.
 
 - `main.tex`: mã nguồn LaTeX, có ghi chú `\note{...}` cho từng slide.
 - `thuyet_trinh.pdf`: bản trình chiếu cuối.
@@ -31,5 +31,5 @@ Máy hiện có MiKTeX, Beamer, PGFPlots và Arial. Không cài thêm dependency
 
 Các bảng chính, ablation và tương quan thuộc notebook ResNet-18 trên 430 ảnh. Slide 21 là full-test 12.630 ảnh từ README của dự án, được ghi rõ là lần chạy riêng. Không dùng chất lượng ảnh subset ghép với F1 full-test. Không dùng số liệu của classifier cũ.
 
-Nguồn cụ thể nằm trong chân slide và `\note`. Ghi chú không xuất hiện trong PDF trình chiếu. Báo cáo đầy đủ và dẫn nguồn học thuật nằm ở `../bao_cao.pdf`.
+Thanh footer chỉ hiển thị paper liên quan theo tác giả, hội nghị/tạp chí và năm; có thể bấm để mở bài báo. Slide không có paper để trống ô giữa. Thông tin truy vết notebook/code được giữ trong `\note`, không xuất hiện trong PDF trình chiếu. Báo cáo đầy đủ và dẫn nguồn học thuật nằm ở `../bao_cao.pdf`.
 

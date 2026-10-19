@@ -37,15 +37,17 @@
     \vskip2.2mm
   \end{beamercolorbox}%
 }
+\newcommand{\insertpaperreference}{}
+\newcommand{\paperreference}[1]{\gdef\insertpaperreference{#1}}
 \setbeamertemplate{footline}{%
   \leavevmode\hbox{%
-    \begin{beamercolorbox}[wd=.30\paperwidth,ht=3.6mm,dp=1.1mm,center]{foot author}%
+    \begin{beamercolorbox}[wd=.30\paperwidth,ht=2.3mm,dp=0.6mm,center]{foot author}%
       \usebeamerfont{footline}Nhóm 3 -- Đại học Phenikaa
     \end{beamercolorbox}%
-    \begin{beamercolorbox}[wd=.58\paperwidth,ht=3.6mm,dp=1.1mm,center]{foot title}%
-      \usebeamerfont{footline}Xử lý ảnh: Tăng cường ảnh thiếu sáng
+    \begin{beamercolorbox}[wd=.58\paperwidth,ht=2.3mm,dp=0.6mm,center]{foot title}%
+      \usebeamerfont{footline}\fontsize{6.5}{7.5}\selectfont\insertpaperreference
     \end{beamercolorbox}%
-    \begin{beamercolorbox}[wd=.12\paperwidth,ht=3.6mm,dp=1.1mm,center]{foot page}%
+    \begin{beamercolorbox}[wd=.12\paperwidth,ht=2.3mm,dp=0.6mm,center]{foot page}%
       \usebeamerfont{footline}\insertframenumber\ /\ \inserttotalframenumber
     \end{beamercolorbox}%
   }%
@@ -53,7 +55,7 @@
 \setbeameroption{hide notes}
 \setlength{\parskip}{4pt}
 \graphicspath{{images/}}
-\newcommand{\source}[1]{\par\vspace{1mm}{\fontsize{7}{8.5}\selectfont\color{Muted}#1\par}}
+\newcommand{\captionnote}[1]{\par\vspace{1mm}{\fontsize{7}{8.5}\selectfont\color{Muted}#1\par}}
 \newcommand{\takeaway}[1]{\par\vspace{2mm}{\color{Teal}\bfseries#1\par}}
 \newcommand{\smalltable}{\fontsize{9}{11}\selectfont\renewcommand{\arraystretch}{1.25}}
 \pgfplotsset{slideplot/.style={
@@ -70,6 +72,7 @@
 \begin{document}
 
 % 01
+\paperreference{}
 \begin{frame}{Bài tập lớn môn Xử lý ảnh}
 \begingroup\setlength{\parskip}{2pt}
 \begin{columns}[T,onlytextwidth]
@@ -97,6 +100,7 @@ Ngô Quang Thiện & 24102651 & 24102651@st.phenikaa-uni.edu.vn
 \end{frame}
 
 % 02
+\paperreference{}
 \begin{frame}{1.1. Mục tiêu và phạm vi}\relax
 {\fontsize{19}{24}\selectfont\bfseries Ảnh sáng hơn có giúp\par nhận dạng biển báo chính xác hơn?\par}
 \par\vspace{5mm}
@@ -117,6 +121,7 @@ Chưa khảo sát detector hoặc camera đêm thực.
 \end{frame}
 
 % 03
+\paperreference{\href{https://doi.org/10.1109/IJCNN.2011.6033395}{Stallkamp et al., IJCNN 2011}}
 \begin{frame}{1.2. GTSRB và chuẩn hóa đầu vào}\relax
 \begin{columns}[T,onlytextwidth]
 \column{0.49\textwidth}
@@ -139,11 +144,11 @@ Chia train/validation theo track để hạn chế rò rỉ dữ liệu.\par\vsp
 1.290 ảnh validation chọn tham số.\par
 430 ảnh test, 10 ảnh mỗi lớp.
 \end{columns}
-\source{Nguồn: notebook ResNet-18, cell 5; cấu hình và mã chuẩn bị dữ liệu của dự án.}
 \note{Khoảng 45 giây. Giải thích track là chuỗi ảnh liên tiếp của cùng một biển. Chia ở cấp track tránh các ảnh gần giống nhau nằm ở cả train và validation. 30 ảnh cách ly không thuộc tập train cuối. Phần lớn phân tích chi tiết dùng 430 ảnh cân bằng lớp, full-test sẽ được đối chiếu riêng. Nguồn: notebooks/GTSRB_LLIE_Complete_Pipeline_Executed.ipynb, cell 5; configs/resnet18.json; src/data.py.}
 \end{frame}
 
 % 04
+\paperreference{}
 \begin{frame}{2.1. Mô phỏng thiếu sáng và nhiễu}\relax
 \par\vspace{-1mm}
 \[U=X^{\gamma_d},\qquad V=\mathcal{P}(pU)/p,\qquad
@@ -166,11 +171,12 @@ Gamma làm tối.\par
 Poisson phụ thuộc tín hiệu.\par
 Gaussian là nhiễu cộng.}
 \end{columns}
-\source{Minh họa cùng một crop validation, noise seed 101. Nguồn: notebook, cell 7.}
+\captionnote{Minh họa cùng một crop validation, noise seed 101.}
 \note{Khoảng 60 giây. Đọc thứ tự: Gamma rồi Poisson, Gaussian, cuối cùng clip. Chỉ vào histogram dịch về phía tối và vùng chữ số bị nhiễu. Giải thích p càng nhỏ thì nhiễu Poisson càng mạnh tương đối. Đây là mô phỏng trên RGB, không phải mô hình vật lý đầy đủ của cảm biến. Nguồn: src/degradation.py, configs/resnet18.json; hình lấy nguyên từ notebook cell 7.}
 \end{frame}
 
 % 05
+\paperreference{\href{https://doi.org/10.1109/CVPR42600.2020.00185}{Guo et al., CVPR 2020}; \href{https://doi.org/10.1109/ICCV51070.2023.01149}{Cai et al., ICCV 2023}; \href{https://doi.org/10.1145/3618373}{Jiang et al., ACM TOG 2023}}
 \begin{frame}{3.1. Bảy phương pháp tăng cường ảnh}\relax
 \centering
 \smalltable
@@ -188,11 +194,12 @@ Diffusion & Phục hồi có điều kiện trong miền wavelet\\\bottomrule
 \raggedright
 \textbf{Identity:} giữ ảnh tối làm đối chứng. \quad
 \textbf{Clean:} ảnh gốc tham chiếu.
-\source{Ba bộ tăng cường sâu dùng trọng số tác giả, không huấn luyện lại trên GTSRB.}
+\captionnote{Ba bộ tăng cường sâu dùng trọng số tác giả, không huấn luyện lại trên GTSRB.}
 \note{Khoảng 45 giây. Phân biệt bốn phương pháp truyền thống và ba phương pháp học sâu. Tổng cộng tám nhánh đánh giá khi tính Identity. Không coi Clean là một thuật toán tăng cường. Nguồn: src/enhancement.py. Zero-DCE: https://arxiv.org/abs/2001.06826; Retinexformer: https://arxiv.org/abs/2303.06705; diffusion: https://arxiv.org/abs/2306.00306.}
 \end{frame}
 
 % 06
+\paperreference{}
 \begin{frame}{3.2. Gamma và lựa chọn mức tăng sáng}\relax
 \begin{columns}[c,onlytextwidth]
 \column{0.43\textwidth}
@@ -210,6 +217,7 @@ Validation chọn \alert{$\alpha=0,8$}.
 \note{Khoảng 50 giây. Chỉ vào ba ảnh trên để so mức nâng sáng. Ở vùng tối đạo hàm alpha nhân Y mũ alpha trừ 1 có thể lớn, vì thế nhiễu được khuếch đại. Hàng dưới dùng để minh họa CLAHE; giữ lưới 8x8 nên đây không phải cấu hình được chọn cuối. Nguồn: notebook cell 9 và cell 13; src/enhancement.py.}
 \end{frame}
 
+\paperreference{}
 \begin{frame}{3.3. HE: ánh xạ từ phân phối tích lũy}\relax
 \begin{columns}[T,onlytextwidth]
 \column{0.48\textwidth}
@@ -229,10 +237,11 @@ Nhanh, không chọn tham số tăng sáng.\par
 Một ánh xạ chung cho toàn ảnh; vùng nhiễu cũng bị kéo giãn.
 \end{columns}
 \takeaway{Histogram trải rộng hơn chưa chứng minh nét biển báo rõ hơn.}
-\source{Nguồn: báo cáo mục HE; src/enhancement.py. Ảnh hằng được xử lý riêng.}
+\captionnote{Ảnh hằng được xử lý riêng.}
 \note{Khoảng 50 giây. Giải thích CDF là phần pixel có mức sáng không vượt quá k. Mức sáng mới phụ thuộc vị trí tích lũy trong histogram. HE xử lý cả vùng biển và nền bằng một ánh xạ nên không thích ứng với chiếu sáng từng vùng. Chỉ xử lý kênh Y giúp hạn chế biến đổi màu, nhưng lượng tử hóa và clipping vẫn có thể làm thay đổi màu.}
 \end{frame}
 
+\paperreference{}
 \begin{frame}{3.4. CLAHE: giới hạn tương phản theo từng vùng}\relax
 \begin{enumerate}
 \item Chia kênh Y thành các ô và tính histogram từng ô.
@@ -252,11 +261,11 @@ $8\times8$: mỗi ô khoảng $8\times8$ pixel.\par
 Validation chọn \alert{$4\times4$}.
 \end{columns}
 \takeaway{Ô quá nhỏ làm thống kê histogram nhạy hơn với nhiễu.}
-\source{Nguồn: báo cáo mục CLAHE; notebook cell 13; src/enhancement.py.}
 \note{Khoảng 55 giây. Giải thích nội suy để tránh các khối vuông có ranh giới rõ. Clip limit hạn chế khuếch đại tương phản nhưng không thay thế bộ khử nhiễu. tileGridSize là số ô theo hai chiều, không phải kích thước pixel. Cấu hình được lựa chọn theo nhận dạng trên validation. Hình ở slide tiếp theo dùng cấu hình mặc định để minh họa cơ chế.}
 \end{frame}
 
 % 07
+\paperreference{}
 \begin{frame}{3.5. HE và CLAHE trên kênh độ sáng}\relax
 \begin{columns}[T,onlytextwidth]
 \column{0.48\textwidth}
@@ -271,11 +280,12 @@ Xử lý theo ô, giới hạn khuếch đại tương phản.
 \raggedright
 {\small RGB đổi sang YCrCb, xử lý Y rồi chuyển lại RGB.\par
 Validation chọn CLAHE: \alert{clip limit 2, lưới $4\times4$}.}
-\source{Hình minh họa dùng tham số mặc định, riêng CLAHE là lưới $8\times8$. Nguồn: notebook cell 8.}
+\captionnote{Hình minh họa dùng tham số mặc định, riêng CLAHE là lưới $8\times8$.}
 \note{Khoảng 60 giây. Histogram rộng hơn chưa chứng minh ảnh tốt hơn. HE có thể kéo giãn vùng sáng mạnh. CLAHE thích ứng theo vùng nhưng ô quá nhỏ trên ảnh 64x64 làm thống kê nhạy hơn với nhiễu. tileGridSize là số ô, không phải kích thước pixel của ô. Cấu hình chọn 4x4 tương ứng ô khoảng 16x16 pixel. Nguồn: src/enhancement.py; https://docs.opencv.org/4.x/d5/daf/tutorial_py_histogram_equalization.html.}
 \end{frame}
 
 % 08
+\paperreference{\href{https://ntrs.nasa.gov/api/citations/19990005051/downloads/19990005051.pdf}{Jobson et al., IEEE TIP 1997}}
 \begin{frame}{3.6. Retinex đa tỉ lệ và tính nhạy nhiễu}\relax
 \textbf{Mô hình chiếu sáng và phản xạ:} $I=R\cdot L$
 \par\vspace{2mm}
@@ -294,10 +304,11 @@ Chi tiết và nhiễu đều có thể nổi rõ.\par
 Không có bước khử nhiễu riêng.
 \end{columns}
 \takeaway{Ablation sẽ tách tác động của độ tối và từng loại nhiễu.}
-\source{MSR giản lược trong src/enhancement.py; không phải MSRCR có phục hồi màu riêng.}
+\captionnote{MSR giản lược, không phải MSRCR có phục hồi màu riêng.}
 \note{Khoảng 50 giây. Giải thích ảnh làm mờ là ước lượng chiếu sáng chậm biến thiên. Trừ trong miền log giúp làm rõ phản xạ nhưng không phân biệt biên thật với nhiễu. Tránh kết luận MSR luôn kém; thí nghiệm chỉ Gamma cho kết quả rất tốt và sẽ được trình bày ở phần ablation. Nguồn: src/enhancement.py và notebook cell 13.}
 \end{frame}
 
+\paperreference{\href{https://ntrs.nasa.gov/api/citations/19990005051/downloads/19990005051.pdf}{Jobson et al., IEEE TIP 1997}}
 \begin{frame}{3.7. MSR: từ phản xạ ước lượng đến ảnh đầu ra}\relax
 \textbf{Ba bước xử lý}\par
 Làm mờ ở $\sigma=5,15,30$ $\rightarrow$ trừ log $\rightarrow$ lấy trung bình.
@@ -315,10 +326,11 @@ Kết hợp chi tiết ở nhiều tỉ lệ.
 Log và kéo giãn có thể tăng nhiễu.\par
 Clipping làm mất giá trị ở hai đầu; màu có thể thay đổi.
 \end{columns}
-\source{Nguồn: báo cáo mục MSR; src/enhancement.py. Nếu khoảng percentile quá nhỏ, trả lại ảnh đầu vào.}
+\captionnote{Nếu khoảng percentile quá nhỏ, trả lại ảnh đầu vào.}
 \note{Khoảng 50 giây. Đây là MSR giản lược, không có phục hồi màu MSRCR. Nhiều tỉ lệ làm mờ không đồng nghĩa với có khử nhiễu riêng. Cần phân biệt khả năng xử lý ảnh chỉ tối với ảnh tối kèm nhiễu; thí nghiệm ablation phía sau cho thấy khác biệt rất lớn.}
 \end{frame}
 
+\paperreference{\href{https://doi.org/10.1109/CVPR42600.2020.00185}{Guo et al., CVPR 2020}}
 \begin{frame}{3.8. Zero-DCE: học đường cong tăng sáng}\relax
 \textbf{Đường cong điều chỉnh cường độ}
 \[I_{t+1}=I_t+A_t\odot I_t\odot(1-I_t)\]
@@ -337,10 +349,10 @@ Chỉ suy luận, không học lại trên GTSRB.\par
 Đưa ảnh đầu ra về miền $[0,1]$.
 \end{columns}
 \takeaway{Tăng sáng thích ứng vẫn cần kiểm tra nhiễu và độ rõ nét số.}
-\source{Nguồn: báo cáo mục Zero-DCE; src/enhancement.py; Guo et al., CVPR 2020.}
 \note{Khoảng 50 giây. Công thức là quy ước dấu trong mô tả phương pháp gốc; tham số có thể làm tăng hoặc giảm cường độ. Mạng dự đoán cách điều chỉnh ảnh chứ không dùng một gamma cố định. Không cần cặp ảnh khi huấn luyện gốc không có nghĩa dự án đã huấn luyện mạng. Trong thí nghiệm chỉ nạp checkpoint.}
 \end{frame}
 
+\paperreference{\href{https://doi.org/10.1109/ICCV51070.2023.01149}{Cai et al., ICCV 2023}}
 \begin{frame}{3.9. Retinexformer: phục hồi có hướng dẫn chiếu sáng}\relax
 \begin{center}
 \fcolorbox{Teal}{Light}{\strut Ảnh tối}\quad$\rightarrow$\quad
@@ -361,10 +373,11 @@ Trọng số LOL-v1 của tác giả.\par
 Kích thước cần chia hết cho 4.\par
 Crop $64\times64$ đáp ứng trực tiếp.
 \end{columns}
-\source{Sơ đồ nguyên lý giản lược. Nguồn: báo cáo; Cai et al., ICCV 2023; src/enhancement.py.}
+\captionnote{Sơ đồ nguyên lý giản lược.}
 \note{Khoảng 50 giây. Sơ đồ diễn tả ý tưởng, không phải toàn bộ các lớp mạng. Retinexformer không phải phép MSR rồi thêm Transformer; nó học cách dùng thông tin chiếu sáng để phục hồi. Trọng số học trên miền khác GTSRB nên cần đo thực nghiệm, không mặc định tốt hơn CLAHE.}
 \end{frame}
 
+\paperreference{\href{https://doi.org/10.1145/3618373}{Jiang et al., ACM TOG 2023}}
 \begin{frame}{3.10. Diffusion trong miền wavelet}\relax
 \textbf{Ý tưởng phục hồi có điều kiện}\par
 Wavelet tách thông tin tần số thấp và chi tiết tần số cao.\par
@@ -383,11 +396,11 @@ Chặn giá trị trong $[0,1]$.\par
 Giữ cấu hình đã chọn trên validation.
 \end{columns}
 \takeaway{Nhiều bước phục hồi làm tăng chi phí xử lý mỗi ảnh.}
-\source{Nguồn: báo cáo; Jiang et al., ACM TOG 2023; src/enhancement.py.}
 \note{Khoảng 55 giây. Phân biệt diffusion phục hồi ảnh có điều kiện với sinh ảnh tự do. Wavelet giúp biểu diễn riêng phần biến thiên chậm và chi tiết; không có nghĩa tự động giữ đúng mọi nét số. EMA là trọng số trung bình trượt của mô hình. Sau phần minh họa sẽ so chất lượng ảnh, F1 và thời gian xử lý để đánh giá đánh đổi.}
 \end{frame}
 
 % 09
+\paperreference{\href{https://doi.org/10.1109/CVPR42600.2020.00185}{Guo et al., CVPR 2020}; \href{https://doi.org/10.1109/ICCV51070.2023.01149}{Cai et al., ICCV 2023}; \href{https://doi.org/10.1145/3618373}{Jiang et al., ACM TOG 2023}}
 \begin{frame}{3.11. Tăng cường học sâu trên cùng một ảnh}\relax
 \begin{columns}[c,onlytextwidth]
 \column{0.43\textwidth}
@@ -402,11 +415,12 @@ Phục hồi với biểu diễn chiếu sáng.\par\vspace{2mm}
 \alert{Độ sáng và màu đầu ra khác nhau rõ rệt.}\par
 Cần đo thêm chất lượng và nhận dạng.
 \end{columns}
-\source{Một crop validation mức vừa, tham số đã chọn. Nguồn: notebook cell 14.}
+\captionnote{Một crop validation mức vừa, tham số đã chọn.}
 \note{Khoảng 50 giây. Hình này dùng tham số đã chọn, khác hình tham số mặc định ở phần HE và CLAHE. Nhìn vào nền trắng, viền đỏ và chữ số. Ảnh diffusion không sáng nhất nhưng giữ kết quả nhận dạng tốt trên tập khảo sát. Một mẫu chỉ minh họa cơ chế, không đại diện xếp hạng toàn tập. Nguồn và bài báo: notebook cell 14; https://arxiv.org/abs/2001.06826; https://arxiv.org/abs/2303.06705; https://arxiv.org/abs/2306.00306.}
 \end{frame}
 
 % 10
+\paperreference{\href{https://doi.org/10.1109/CVPR.2016.90}{He et al., CVPR 2016}; \href{https://doi.org/10.1109/TIP.2003.819861}{Wang et al., IEEE TIP 2004}}
 \begin{frame}{4.1. Giao thức đánh giá với ResNet-18 cố định}\relax
 \begin{columns}[T,onlytextwidth]
 \column{0.49\textwidth}
@@ -426,11 +440,12 @@ Resize $224\times224$, normalize một lần.\par
 Accuracy và Macro-F1 cho 43 lớp.\par
 Chọn tham số trên validation trước test.
 \end{columns}
-\source{Bảng nhận dạng: trung bình noise trong từng training seed, rồi mean và sample SD qua 3 training seed.}
+\captionnote{Trung bình noise trong từng training seed, rồi mean và sample SD qua 3 training seed.}
 \note{Khoảng 60 giây. 219 lượt là ma trận đánh giá, không phải 219 lần huấn luyện. Enhancer và metric ảnh làm việc ở 64x64. ResNet được huấn luyện ba lần với augmentation nhẹ trên ảnh gốc, sau đó khóa. Macro-F1 tính trọng số bằng nhau cho 43 lớp. Chín tổ hợp seed không phải chín lần train độc lập. Nguồn: configs/resnet18.json, src/model.py và notebook cells 11, 16, 17.}
 \end{frame}
 
 % 11
+\paperreference{}
 \begin{frame}{5.1. Macro-F1 giảm khi thiếu sáng nặng hơn}\relax
 {\small ResNet-18, tập con 430 ảnh. Giá trị mean $\pm$ SD (\%).}
 \par\vspace{1mm}\par\centering
@@ -449,11 +464,12 @@ Retinexformer & $79,99\pm4,01$ & $73,63\pm3,74$ & $52,57\pm2,41$\\
 \end{tabular}
 \raggedright
 \takeaway{Diffusion tăng khoảng 1,63 / 7,36 / 8,91 điểm phần trăm so với Identity.}
-\source{Clean: Macro-F1 $98,50\%\pm0,83$. Nguồn: notebook cell 16--17 và data/resnet18\_notebook\_aggregate.csv.}
+\captionnote{Clean: Macro-F1 $98,50\%\pm0,83$.}
 \note{Khoảng 60 giây. Không đọc mọi ô. Chỉ ba dòng Identity, CLAHE, diffusion để mô tả xu hướng. Diffusion được chọn từ validation, không chọn sau khi xem bảng này. Mức nhẹ CLAHE và diffusion chỉ cách 0,03 điểm phần trăm, chưa phải bằng chứng ưu thế chắc chắn. Ở mức nặng ngay cả diffusion còn xa clean. Nguồn: data/resnet18_notebook_aggregate.csv, tính lại từ 219 bản ghi notebook.}
 \end{frame}
 
 % 12
+\paperreference{}
 \begin{frame}{5.2. PSNR cao hơn chưa bảo đảm nhận dạng tốt hơn}\relax
 {\small Cùng 430 ảnh ở mức tối vừa, cùng ResNet-18.}
 \par\vspace{3mm}\par
@@ -469,11 +485,12 @@ Diffusion & 14,90 & 0,5410 & \textbf{82,95} & \textbf{82,71}\\\bottomrule
 PSNR phản ánh sai số cường độ trên toàn ảnh.\par
 ResNet-18 cần các đặc trưng như nét số, đường viền và màu sắc.
 \takeaway{Metric chất lượng ảnh bổ trợ giải thích, không thay thế metric nhận dạng.}
-\source{Giá trị trung bình, nguồn: data/resnet18\_notebook\_aggregate.csv.}
+\captionnote{Giá trị trung bình trên cùng tập con 430 ảnh.}
 \note{Khoảng 60 giây. So Zero-DCE với diffusion: PSNR 20,08 lớn hơn 14,90 nhưng F1 69,30 thấp hơn 82,71. CLAHE có SSIM cao hơn diffusion nhưng F1 thấp hơn. Cơ chế giữ hoặc làm mất chi tiết là cách giải thích hợp lý, cần xem từng ảnh để xác nhận nguyên nhân. Nguồn: notebook và bảng CSV kèm theo.}
 \end{frame}
 
 % 13
+\paperreference{}
 \begin{frame}{5.3. Tương quan giữa chất lượng ảnh và Macro-F1}\relax
 \begin{columns}[c,onlytextwidth]
 \column{0.66\textwidth}
@@ -494,11 +511,12 @@ Thứ hạng PSNR ít phù hợp hơn với F1 khi tối nặng.\par\vspace{3mm}
 \alert{Phân tích khám phá:}\par
 Ít điểm và dùng chung tập ảnh.
 \end{columns}
-\source{Pearson cũng dương ở cả ba mức. Nguồn: data/resnet18\_correlations.csv.}
+\captionnote{Pearson cũng dương ở cả ba mức.}
 \note{Khoảng 55 giây. Spearman so thứ hạng giữa phương pháp theo chất lượng và theo F1. Pearson đo liên hệ tuyến tính, với PSNR/F1 là 0,715; 0,660; 0,686 và SSIM/F1 là 0,741; 0,755; 0,691. Không nói tương quan là quan hệ nhân quả. Tám phương pháp cùng dữ liệu nên không độc lập; MSR thấp ở cả hai trục có thể ảnh hưởng Pearson. Nguồn: data/resnet18_correlations.csv.}
 \end{frame}
 
 % 14
+\paperreference{}
 \begin{frame}{5.4. Nhiễu làm thay đổi thứ hạng phương pháp}\relax
 \begin{columns}[c,onlytextwidth]
 \column{0.68\textwidth}
@@ -520,13 +538,14 @@ Giữ tham số enhancer và checkpoint.\par\vspace{3mm}
 98,20\% còn 50,97\%.\par
 Giảm \alert{47,23 điểm phần trăm} khi thêm cả hai nhiễu.
 \end{columns}
-\source{Ablation trên 430 ảnh, 288 lượt. Nguồn: notebook cell 20 và data/resnet18\_ablation\_displayed.csv.}
+\captionnote{Ablation trên 430 ảnh, 288 lượt.}
 \note{Khoảng 60 giây. MSR không luôn kém: tốt nhất khi chỉ có Gamma trong bảng đầy đủ. Thêm nhiễu làm MSR suy giảm mạnh, phù hợp cơ chế log nhạy ở vùng tối. Trong cấu hình này Poisson ảnh hưởng mạnh hơn Gaussian, nhưng hai mức nhiễu không cân bằng năng lượng nên không suy rộng cho mọi trường hợp. Ba đường là các phương pháp đại diện, không phải toàn bộ tám phương pháp.}
 \end{frame}
 
 % 15
+\paperreference{}
 \begin{frame}{5.5. Đối chiếu trên 12.630 ảnh test}\relax
-{\small Thí nghiệm full-test ResNet-18, tách riêng lần chạy notebook 430 ảnh.}
+{\small Thí nghiệm full-test ResNet-18, tách riêng thí nghiệm trên 430 ảnh.}
 \par\vspace{4mm}\par\centering
 \renewcommand{\arraystretch}{1.55}
 \begin{tabular}{lccc}
@@ -539,11 +558,12 @@ Diffusion & $93,45\pm1,80$ & $83,87\pm2,97$ & $64,88\pm3,84$\\\bottomrule
 Diffusion tăng \alert{1,45 / 5,83 / 5,18} điểm phần trăm so với Identity.\par
 CLAHE có F1 cao hơn ở mức nhẹ.\par
 Không dùng quan sát test để đổi lựa chọn validation.
-\source{Nguồn: bảng full-test trong README dự án. Chưa có artifacts dự đoán full-test tại bản sao dùng soạn slide.}
+\captionnote{Full-test là lần chạy riêng; chưa đối chiếu lại dự đoán từng ảnh trong bản báo cáo này.}
 \note{Khoảng 45 giây. Nói rõ đây là số liệu dự án công bố trong README, không phải lấy chất lượng ảnh subset ghép với F1 full-test. Chỉ trình bày ba phương án để đối chiếu xu hướng. Bảng đủ tám phương pháp có trong báo cáo. Chưa kiểm tra lại dự đoán từng ảnh full-test ở máy này. Nguồn: data/resnet18_fulltest_readme.csv, README.md.}
 \end{frame}
 
 % 16
+\paperreference{}
 \begin{frame}{5.6. Hiệu năng nhận dạng và chi phí xử lý}\relax
 \begin{columns}[c,onlytextwidth]
 \column{0.54\textwidth}
@@ -564,11 +584,12 @@ Khoảng cách F1 mức vừa là 2,57 điểm phần trăm.
 \par\vspace{5mm}
 \alert{Thời gian enhancer, chưa phải độ trễ toàn hệ thống.}\par
 {\small Mô hình sâu dùng Tesla T4, các phép truyền thống chạy CPU.}
-\source{Mức tối vừa, notebook 430 ảnh. Nguồn: data/resnet18\_notebook\_aggregate.csv.}
+\captionnote{Mức tối vừa, tập con 430 ảnh.}
 \note{Khoảng 45 giây. Độ trễ chỉ bao gồm khối tăng cường theo cách đo dự án, không bao gồm detector, I/O và toàn bộ classifier. Không chuyển ms/ảnh thành khẳng định FPS thực tế của hệ thống. Nếu mục tiêu ràng buộc thời gian thay đổi, cần lựa chọn lại trên validation theo mục tiêu đó.}
 \end{frame}
 
 % 17
+\paperreference{}
 \begin{frame}{6.1. Quy trình tiền xử lý đề xuất}\relax
 \begin{enumerate}
 \setlength{\itemsep}{3mm}
@@ -585,6 +606,7 @@ Khoảng cách F1 mức vừa là 2,57 điểm phần trăm.
 \end{frame}
 
 % 18
+\paperreference{}
 \begin{frame}{6.2. Kết luận và hướng phát triển}\relax
 \textbf{Kết quả chính}\par
 Tăng cường ảnh có thể cải thiện nhận dạng trên cùng ResNet-18.\par
