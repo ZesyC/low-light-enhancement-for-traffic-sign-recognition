@@ -21,6 +21,7 @@
 \setbeamercolor{structure}{fg=Blue}
 \setbeamercolor{alerted text}{fg=Blue}
 \setbeamercolor{foot author}{fg=white,bg=Blue}
+\setbeamercolor{foot course}{fg=Blue,bg=TitleBand}
 \setbeamercolor{foot title}{fg=Navy,bg=Light}
 \setbeamercolor{foot page}{fg=Blue,bg=TitleBand}
 \setbeamerfont{frametitle}{size=\fontsize{14}{17}\selectfont,series=\mdseries}
@@ -41,10 +42,13 @@
 \newcommand{\paperreference}[1]{\gdef\insertpaperreference{#1}}
 \setbeamertemplate{footline}{%
   \leavevmode\hbox{%
-    \begin{beamercolorbox}[wd=.30\paperwidth,ht=2.3mm,dp=0.6mm,center]{foot author}%
-      \usebeamerfont{footline}Nhóm 3 -- Đại học Phenikaa
+    \begin{beamercolorbox}[wd=.12\paperwidth,ht=2.3mm,dp=0.6mm,center]{foot author}%
+      \usebeamerfont{footline}Nhóm 3
     \end{beamercolorbox}%
-    \begin{beamercolorbox}[wd=.58\paperwidth,ht=2.3mm,dp=0.6mm,center]{foot title}%
+    \begin{beamercolorbox}[wd=.16\paperwidth,ht=2.3mm,dp=0.6mm,center]{foot course}%
+      \usebeamerfont{footline}Xử lý ảnh
+    \end{beamercolorbox}%
+    \begin{beamercolorbox}[wd=.60\paperwidth,ht=2.3mm,dp=0.6mm,center]{foot title}%
       \usebeamerfont{footline}\fontsize{6.5}{7.5}\selectfont\insertpaperreference
     \end{beamercolorbox}%
     \begin{beamercolorbox}[wd=.12\paperwidth,ht=2.3mm,dp=0.6mm,center]{foot page}%

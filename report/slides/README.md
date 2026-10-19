@@ -1,6 +1,6 @@
 # Slide thuyết trình LaTeX Beamer
 
-24 slide tiếng Việt, tỉ lệ 16:9, phù hợp khoảng 18–20 phút. Thiết kế theo phong cách bài giảng: nền trắng, dải tiêu đề xám nhạt, tiêu đề và header bảng màu xanh dương, footer mỏng ghi nhóm, trích dẫn paper (nếu có) và số trang. Nội dung tập trung xử lý ảnh, toàn bộ kết quả nhận dạng dùng ResNet-18.
+24 slide tiếng Việt, tỉ lệ 16:9, phù hợp khoảng 18–20 phút. Thiết kế theo phong cách bài giảng: nền trắng, dải tiêu đề xám nhạt, tiêu đề và header bảng màu xanh dương, footer mỏng gồm bốn ô: Nhóm 3, Xử lý ảnh, trích dẫn paper (nếu có) và số trang. Nội dung tập trung xử lý ảnh, toàn bộ kết quả nhận dạng dùng ResNet-18.
 
 - `main.tex`: mã nguồn LaTeX, có ghi chú `\note{...}` cho từng slide.
 - `thuyet_trinh.pdf`: bản trình chiếu cuối.
