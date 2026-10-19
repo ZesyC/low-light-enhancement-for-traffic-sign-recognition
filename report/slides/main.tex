@@ -5,27 +5,55 @@
 \setsansfont{Arial}
 \setmainfont{Arial}
 \usefonttheme{professionalfonts}
-\usepackage{amsmath,booktabs,array,graphicx,pgfplots}
+\usepackage{amsmath,booktabs,array,colortbl,graphicx,pgfplots}
 \pgfplotsset{compat=1.18}
-\definecolor{Navy}{HTML}{132D4F}
-\definecolor{Orange}{HTML}{D87325}
-\definecolor{Teal}{HTML}{087E8B}
-\definecolor{Muted}{HTML}{546274}
-\definecolor{Light}{HTML}{E8EDF2}
-\setbeamercolor{normal text}{fg=Navy,bg=white}
-\setbeamercolor{frametitle}{fg=Navy}
-\setbeamercolor{structure}{fg=Teal}
-\setbeamercolor{alerted text}{fg=Orange}
-\setbeamerfont{frametitle}{size=\large,series=\bfseries}
+% Lecture-style theme: white canvas, gray title band and blue footer.
+\definecolor{Navy}{HTML}{12366D}
+\definecolor{Blue}{HTML}{1458B5}
+\definecolor{MidBlue}{HTML}{4D84C6}
+\definecolor{Teal}{HTML}{1458B5}
+\definecolor{Orange}{HTML}{4D84C6}
+\definecolor{Muted}{HTML}{5E6672}
+\definecolor{Light}{HTML}{E8F0FA}
+\definecolor{TitleBand}{HTML}{F2F2F2}
+\setbeamercolor{normal text}{fg=black,bg=white}
+\setbeamercolor{frametitle}{fg=Blue,bg=TitleBand}
+\setbeamercolor{structure}{fg=Blue}
+\setbeamercolor{alerted text}{fg=Blue}
+\setbeamercolor{foot author}{fg=white,bg=Blue}
+\setbeamercolor{foot title}{fg=Navy,bg=Light}
+\setbeamercolor{foot page}{fg=Blue,bg=TitleBand}
+\setbeamerfont{frametitle}{size=\fontsize{14}{17}\selectfont,series=\mdseries}
+\setbeamerfont{footline}{size=\fontsize{7}{8.5}\selectfont}
 \setbeamertemplate{navigation symbols}{}
-\setbeamertemplate{itemize item}{\small\textbullet}
+\setbeamertemplate{itemize item}[ball]
+\setbeamertemplate{itemize subitem}[circle]
 \setbeamersize{text margin left=8mm,text margin right=8mm}
-\setbeamertemplate{frametitle}{\vspace{3mm}\insertframetitle\par\vspace{1mm}}
-\setbeamertemplate{footline}{\hfill{\color{Muted}\scriptsize\insertframenumber\,/\,\inserttotalframenumber}\hspace{8mm}\vspace{3mm}}
+\setbeamertemplate{frametitle}{%
+  \nointerlineskip
+  \begin{beamercolorbox}[wd=\paperwidth,sep=0pt,leftskip=4mm,rightskip=4mm]{frametitle}
+    \vbox{}\vskip2.7mm
+    \usebeamerfont{frametitle}\strut\insertframetitle\strut\par
+    \vskip2.2mm
+  \end{beamercolorbox}%
+}
+\setbeamertemplate{footline}{%
+  \leavevmode\hbox{%
+    \begin{beamercolorbox}[wd=.30\paperwidth,ht=3.6mm,dp=1.1mm,center]{foot author}%
+      \usebeamerfont{footline}Nhóm 3 -- Đại học Phenikaa
+    \end{beamercolorbox}%
+    \begin{beamercolorbox}[wd=.58\paperwidth,ht=3.6mm,dp=1.1mm,center]{foot title}%
+      \usebeamerfont{footline}Xử lý ảnh: Tăng cường ảnh thiếu sáng
+    \end{beamercolorbox}%
+    \begin{beamercolorbox}[wd=.12\paperwidth,ht=3.6mm,dp=1.1mm,center]{foot page}%
+      \usebeamerfont{footline}\insertframenumber\ /\ \inserttotalframenumber
+    \end{beamercolorbox}%
+  }%
+}
 \setbeameroption{hide notes}
 \setlength{\parskip}{4pt}
 \graphicspath{{images/}}
-\newcommand{\source}[1]{\par\vspace{1mm}{\fontsize{6.5}{8}\selectfont\color{Muted}#1\par}}
+\newcommand{\source}[1]{\par\vspace{1mm}{\fontsize{7}{8.5}\selectfont\color{Muted}#1\par}}
 \newcommand{\takeaway}[1]{\par\vspace{2mm}{\color{Teal}\bfseries#1\par}}
 \newcommand{\smalltable}{\fontsize{9}{11}\selectfont\renewcommand{\arraystretch}{1.25}}
 \pgfplotsset{slideplot/.style={
@@ -42,7 +70,8 @@
 \begin{document}
 
 % 01
-\begin{frame}[plain]
+\begin{frame}{Bài tập lớn môn Xử lý ảnh}
+\begingroup\setlength{\parskip}{2pt}
 \begin{columns}[T,onlytextwidth]
 \column{0.83\textwidth}
 {\small ĐẠI HỌC PHENIKAA\par TRƯỜNG CÔNG NGHỆ THÔNG TIN PHENIKAA}
@@ -54,10 +83,8 @@
 Khảo sát ảnh hưởng của xử lý ảnh\par
 đến hiệu năng nhận dạng biển báo\par
 giao thông trong điều kiện thiếu sáng\par}
-\par\vspace{3mm}
-{\color{Teal}\large Bài tập lớn môn Xử lý ảnh}\par
-\par\vspace{1mm}
-{\small\textbf{Giảng viên hướng dẫn:} Nguyễn Ngọc Giang\par}
+\par\vspace{2mm}
+{\small\textbf{Giảng viên hướng dẫn:} TS. Nguyễn Ngọc Giang\par}
 {\fontsize{8}{10}\selectfont\textbf{Nhóm 3}\par
 \begin{tabular}{@{}lll@{}}
 Kiều Thị Thu Trang & 24100093 & 24100093@st.phenikaa-uni.edu.vn\\
@@ -65,11 +92,12 @@ Trần Minh Sang & 24100012 & 24100012@st.phenikaa-uni.edu.vn\\
 Ngô Quang Thiện & 24102651 & 24102651@st.phenikaa-uni.edu.vn
 \end{tabular}\par}
 {\scriptsize GTSRB \qquad ResNet-18 \qquad Tháng 10/2026}
+\endgroup
 \note{Thời lượng khoảng 30 giây. Giới thiệu tên đề tài và thành viên. Nhấn mạnh đối tượng khảo sát là các phép xử lý ảnh, còn ResNet-18 đóng vai trò bộ nhận dạng cố định để kiểm chứng. Logo và thông tin nhóm lấy từ paper mẫu theo yêu cầu người dùng.}
 \end{frame}
 
 % 02
-\begin{frame}{Mục tiêu và phạm vi}\relax
+\begin{frame}{1.1. Mục tiêu và phạm vi}\relax
 {\fontsize{19}{24}\selectfont\bfseries Ảnh sáng hơn có giúp\par nhận dạng biển báo chính xác hơn?\par}
 \par\vspace{5mm}
 \begin{columns}[T,onlytextwidth]
@@ -89,14 +117,14 @@ Chưa khảo sát detector hoặc camera đêm thực.
 \end{frame}
 
 % 03
-\begin{frame}{GTSRB và chuẩn hóa đầu vào}\relax
+\begin{frame}{1.2. GTSRB và chuẩn hóa đầu vào}\relax
 \begin{columns}[T,onlytextwidth]
 \column{0.49\textwidth}
 {\fontsize{30}{33}\selectfont\bfseries 43}\par
 lớp biển báo giao thông\par\vspace{3mm}
 \smalltable
 \begin{tabular}{lr}
-\toprule Tập dữ liệu & Số ảnh\\\midrule
+\rowcolor{Blue} \color{white}\bfseries Tập dữ liệu & \color{white}\bfseries Số ảnh\\\midrule
 Train & 31.350\\
 Validation & 7.829\\
 Cách ly & 30\\
@@ -116,7 +144,7 @@ Chia train/validation theo track để hạn chế rò rỉ dữ liệu.\par\vsp
 \end{frame}
 
 % 04
-\begin{frame}{Mô phỏng thiếu sáng và nhiễu}\relax
+\begin{frame}{2.1. Mô phỏng thiếu sáng và nhiễu}\relax
 \par\vspace{-1mm}
 \[U=X^{\gamma_d},\qquad V=\mathcal{P}(pU)/p,\qquad
 Y=\operatorname{clip}(V+\varepsilon,0,1)\]
@@ -127,7 +155,7 @@ Y=\operatorname{clip}(V+\varepsilon,0,1)\]
 \column{0.29\textwidth}
 \setlength{\tabcolsep}{3pt}\smalltable
 \begin{tabular}{lrrr}
-\toprule & $\gamma_d$ & $p$ & $\sigma_n$\\\midrule
+\rowcolor{Blue} \color{white}\bfseries  & \color{white}\bfseries $\gamma_d$ & \color{white}\bfseries $p$ & \color{white}\bfseries $\sigma_n$\\\midrule
 Nhẹ & 1,5 & 120 & 0,005\\
 Vừa & 2,2 & 60 & 0,010\\
 Nặng & 3,0 & 30 & 0,020\\\bottomrule
@@ -143,11 +171,11 @@ Gaussian là nhiễu cộng.}
 \end{frame}
 
 % 05
-\begin{frame}{Bảy phương pháp tăng cường ảnh}\relax
+\begin{frame}{3.1. Bảy phương pháp tăng cường ảnh}\relax
 \centering
 \smalltable
 \begin{tabular}{p{3.3cm}p{9.4cm}}
-\toprule Phương pháp & Cơ chế chính\\\midrule
+\rowcolor{Blue} \color{white}\bfseries Phương pháp & \color{white}\bfseries Cơ chế chính\\\midrule
 Gamma & Điều chỉnh cường độ bằng hàm lũy thừa\\
 HE & Cân bằng histogram toàn cục trên kênh Y\\
 CLAHE & Cân bằng cục bộ và giới hạn tương phản\\
@@ -165,7 +193,7 @@ Diffusion & Phục hồi có điều kiện trong miền wavelet\\\bottomrule
 \end{frame}
 
 % 06
-\begin{frame}{Gamma và lựa chọn mức tăng sáng}\relax
+\begin{frame}{3.2. Gamma và lựa chọn mức tăng sáng}\relax
 \begin{columns}[c,onlytextwidth]
 \column{0.43\textwidth}
 {\large $\widehat{X}=Y^{\alpha},\quad 0<\alpha<1$}\par\vspace{3mm}
@@ -182,7 +210,7 @@ Validation chọn \alert{$\alpha=0,8$}.
 \note{Khoảng 50 giây. Chỉ vào ba ảnh trên để so mức nâng sáng. Ở vùng tối đạo hàm alpha nhân Y mũ alpha trừ 1 có thể lớn, vì thế nhiễu được khuếch đại. Hàng dưới dùng để minh họa CLAHE; giữ lưới 8x8 nên đây không phải cấu hình được chọn cuối. Nguồn: notebook cell 9 và cell 13; src/enhancement.py.}
 \end{frame}
 
-\begin{frame}{HE: ánh xạ từ phân phối tích lũy}\relax
+\begin{frame}{3.3. HE: ánh xạ từ phân phối tích lũy}\relax
 \begin{columns}[T,onlytextwidth]
 \column{0.48\textwidth}
 \textbf{Từ histogram đến mức sáng mới}
@@ -205,7 +233,7 @@ Một ánh xạ chung cho toàn ảnh; vùng nhiễu cũng bị kéo giãn.
 \note{Khoảng 50 giây. Giải thích CDF là phần pixel có mức sáng không vượt quá k. Mức sáng mới phụ thuộc vị trí tích lũy trong histogram. HE xử lý cả vùng biển và nền bằng một ánh xạ nên không thích ứng với chiếu sáng từng vùng. Chỉ xử lý kênh Y giúp hạn chế biến đổi màu, nhưng lượng tử hóa và clipping vẫn có thể làm thay đổi màu.}
 \end{frame}
 
-\begin{frame}{CLAHE: giới hạn tương phản theo từng vùng}\relax
+\begin{frame}{3.4. CLAHE: giới hạn tương phản theo từng vùng}\relax
 \begin{enumerate}
 \item Chia kênh Y thành các ô và tính histogram từng ô.
 \item Cắt các bin vượt ngưỡng, phân phối lại phần dư.
@@ -229,7 +257,7 @@ Validation chọn \alert{$4\times4$}.
 \end{frame}
 
 % 07
-\begin{frame}{HE và CLAHE trên kênh độ sáng}\relax
+\begin{frame}{3.5. HE và CLAHE trên kênh độ sáng}\relax
 \begin{columns}[T,onlytextwidth]
 \column{0.48\textwidth}
 \textbf{HE}\par
@@ -239,7 +267,7 @@ Một phép ánh xạ histogram cho toàn ảnh.
 Xử lý theo ô, giới hạn khuếch đại tương phản.
 \end{columns}
 \par\vspace{2mm}
-\centering\includegraphics[width=12.5cm,height=3.8cm,keepaspectratio]{classical_default.png}\par
+\centering\includegraphics[width=12.5cm,height=3.5cm,keepaspectratio]{classical_default.png}\par
 \raggedright
 {\small RGB đổi sang YCrCb, xử lý Y rồi chuyển lại RGB.\par
 Validation chọn CLAHE: \alert{clip limit 2, lưới $4\times4$}.}
@@ -248,7 +276,7 @@ Validation chọn CLAHE: \alert{clip limit 2, lưới $4\times4$}.}
 \end{frame}
 
 % 08
-\begin{frame}{Retinex đa tỉ lệ và tính nhạy nhiễu}\relax
+\begin{frame}{3.6. Retinex đa tỉ lệ và tính nhạy nhiễu}\relax
 \textbf{Mô hình chiếu sáng và phản xạ:} $I=R\cdot L$
 \par\vspace{2mm}
 \[r=\frac{1}{S}\sum_{s=1}^{S}\left[\log(Y+\epsilon)-\log(G_{\sigma_s}*Y+\epsilon)\right]\]
@@ -270,7 +298,7 @@ Không có bước khử nhiễu riêng.
 \note{Khoảng 50 giây. Giải thích ảnh làm mờ là ước lượng chiếu sáng chậm biến thiên. Trừ trong miền log giúp làm rõ phản xạ nhưng không phân biệt biên thật với nhiễu. Tránh kết luận MSR luôn kém; thí nghiệm chỉ Gamma cho kết quả rất tốt và sẽ được trình bày ở phần ablation. Nguồn: src/enhancement.py và notebook cell 13.}
 \end{frame}
 
-\begin{frame}{MSR: từ phản xạ ước lượng đến ảnh đầu ra}\relax
+\begin{frame}{3.7. MSR: từ phản xạ ước lượng đến ảnh đầu ra}\relax
 \textbf{Ba bước xử lý}\par
 Làm mờ ở $\sigma=5,15,30$ $\rightarrow$ trừ log $\rightarrow$ lấy trung bình.
 \par\vspace{3mm}
@@ -291,7 +319,7 @@ Clipping làm mất giá trị ở hai đầu; màu có thể thay đổi.
 \note{Khoảng 50 giây. Đây là MSR giản lược, không có phục hồi màu MSRCR. Nhiều tỉ lệ làm mờ không đồng nghĩa với có khử nhiễu riêng. Cần phân biệt khả năng xử lý ảnh chỉ tối với ảnh tối kèm nhiễu; thí nghiệm ablation phía sau cho thấy khác biệt rất lớn.}
 \end{frame}
 
-\begin{frame}{Zero-DCE: học đường cong tăng sáng}\relax
+\begin{frame}{3.8. Zero-DCE: học đường cong tăng sáng}\relax
 \textbf{Đường cong điều chỉnh cường độ}
 \[I_{t+1}=I_t+A_t\odot I_t\odot(1-I_t)\]
 {\small $A_t$ được mạng ước lượng theo ảnh; $\odot$ là nhân từng phần tử.}
@@ -313,7 +341,7 @@ Chỉ suy luận, không học lại trên GTSRB.\par
 \note{Khoảng 50 giây. Công thức là quy ước dấu trong mô tả phương pháp gốc; tham số có thể làm tăng hoặc giảm cường độ. Mạng dự đoán cách điều chỉnh ảnh chứ không dùng một gamma cố định. Không cần cặp ảnh khi huấn luyện gốc không có nghĩa dự án đã huấn luyện mạng. Trong thí nghiệm chỉ nạp checkpoint.}
 \end{frame}
 
-\begin{frame}{Retinexformer: phục hồi có hướng dẫn chiếu sáng}\relax
+\begin{frame}{3.9. Retinexformer: phục hồi có hướng dẫn chiếu sáng}\relax
 \begin{center}
 \fcolorbox{Teal}{Light}{\strut Ảnh tối}\quad$\rightarrow$\quad
 \fcolorbox{Teal}{Light}{\strut Ước lượng chiếu sáng}\par\vspace{3mm}
@@ -337,7 +365,7 @@ Crop $64\times64$ đáp ứng trực tiếp.
 \note{Khoảng 50 giây. Sơ đồ diễn tả ý tưởng, không phải toàn bộ các lớp mạng. Retinexformer không phải phép MSR rồi thêm Transformer; nó học cách dùng thông tin chiếu sáng để phục hồi. Trọng số học trên miền khác GTSRB nên cần đo thực nghiệm, không mặc định tốt hơn CLAHE.}
 \end{frame}
 
-\begin{frame}{Diffusion trong miền wavelet}\relax
+\begin{frame}{3.10. Diffusion trong miền wavelet}\relax
 \textbf{Ý tưởng phục hồi có điều kiện}\par
 Wavelet tách thông tin tần số thấp và chi tiết tần số cao.\par
 Diffusion phục hồi có điều kiện kết hợp xử lý thành phần tần số cao.
@@ -360,7 +388,7 @@ Giữ cấu hình đã chọn trên validation.
 \end{frame}
 
 % 09
-\begin{frame}{Tăng cường học sâu trên cùng một ảnh}\relax
+\begin{frame}{3.11. Tăng cường học sâu trên cùng một ảnh}\relax
 \begin{columns}[c,onlytextwidth]
 \column{0.43\textwidth}
 \centering\includegraphics[height=5.7cm]{enhancers_selected.png}
@@ -379,7 +407,7 @@ Cần đo thêm chất lượng và nhận dạng.
 \end{frame}
 
 % 10
-\begin{frame}{Giao thức đánh giá với ResNet-18 cố định}\relax
+\begin{frame}{4.1. Giao thức đánh giá với ResNet-18 cố định}\relax
 \begin{columns}[T,onlytextwidth]
 \column{0.49\textwidth}
 \textbf{Kiểm soát thí nghiệm}\par
@@ -403,13 +431,13 @@ Chọn tham số trên validation trước test.
 \end{frame}
 
 % 11
-\begin{frame}{Macro-F1 giảm khi thiếu sáng nặng hơn}\relax
+\begin{frame}{5.1. Macro-F1 giảm khi thiếu sáng nặng hơn}\relax
 {\small ResNet-18, tập con 430 ảnh. Giá trị mean $\pm$ SD (\%).}
 \par\vspace{1mm}\par\centering
 \smalltable
 \setlength{\tabcolsep}{10pt}
 \begin{tabular}{lccc}
-\toprule Phương pháp & Tối nhẹ & Tối vừa & Tối nặng\\\midrule
+\rowcolor{Blue} \color{white}\bfseries Phương pháp & \color{white}\bfseries Tối nhẹ & \color{white}\bfseries Tối vừa & \color{white}\bfseries Tối nặng\\\midrule
 Identity & $90,38\pm2,17$ & $75,35\pm2,55$ & $54,81\pm2,30$\\
 Gamma & $91,85\pm1,61$ & $76,81\pm2,83$ & $55,21\pm3,75$\\
 HE & $90,22\pm2,96$ & $75,25\pm5,53$ & $52,46\pm9,08$\\
@@ -426,12 +454,12 @@ Retinexformer & $79,99\pm4,01$ & $73,63\pm3,74$ & $52,57\pm2,41$\\
 \end{frame}
 
 % 12
-\begin{frame}{PSNR cao hơn chưa bảo đảm nhận dạng tốt hơn}\relax
+\begin{frame}{5.2. PSNR cao hơn chưa bảo đảm nhận dạng tốt hơn}\relax
 {\small Cùng 430 ảnh ở mức tối vừa, cùng ResNet-18.}
 \par\vspace{3mm}\par
 \centering\renewcommand{\arraystretch}{1.4}
 \begin{tabular}{lrrrr}
-\toprule & PSNR (dB) & SSIM & Accuracy (\%) & Macro-F1 (\%)\\\midrule
+\rowcolor{Blue} \color{white}\bfseries  & \color{white}\bfseries PSNR (dB) & \color{white}\bfseries SSIM & \color{white}\bfseries Accuracy (\%) & \color{white}\bfseries Macro-F1 (\%)\\\midrule
 Identity & 15,37 & 0,3410 & 73,05 & 75,35\\
 Zero-DCE & \textbf{20,08} & 0,4509 & 66,02 & 69,30\\
 CLAHE & 19,29 & \textbf{0,5568} & 78,50 & 80,14\\
@@ -446,7 +474,7 @@ ResNet-18 cần các đặc trưng như nét số, đường viền và màu s�
 \end{frame}
 
 % 13
-\begin{frame}{Tương quan giữa chất lượng ảnh và Macro-F1}\relax
+\begin{frame}{5.3. Tương quan giữa chất lượng ảnh và Macro-F1}\relax
 \begin{columns}[c,onlytextwidth]
 \column{0.66\textwidth}
 \begin{tikzpicture}
@@ -471,7 +499,7 @@ Thứ hạng PSNR ít phù hợp hơn với F1 khi tối nặng.\par\vspace{3mm}
 \end{frame}
 
 % 14
-\begin{frame}{Nhiễu làm thay đổi thứ hạng phương pháp}\relax
+\begin{frame}{5.4. Nhiễu làm thay đổi thứ hạng phương pháp}\relax
 \begin{columns}[c,onlytextwidth]
 \column{0.68\textwidth}
 \begin{tikzpicture}
@@ -497,12 +525,12 @@ Giảm \alert{47,23 điểm phần trăm} khi thêm cả hai nhiễu.
 \end{frame}
 
 % 15
-\begin{frame}{Đối chiếu trên 12.630 ảnh test}\relax
+\begin{frame}{5.5. Đối chiếu trên 12.630 ảnh test}\relax
 {\small Thí nghiệm full-test ResNet-18, tách riêng lần chạy notebook 430 ảnh.}
 \par\vspace{4mm}\par\centering
 \renewcommand{\arraystretch}{1.55}
 \begin{tabular}{lccc}
-\toprule Macro-F1 (\%) & Tối nhẹ & Tối vừa & Tối nặng\\\midrule
+\rowcolor{Blue} \color{white}\bfseries Macro-F1 (\%) & \color{white}\bfseries Tối nhẹ & \color{white}\bfseries Tối vừa & \color{white}\bfseries Tối nặng\\\midrule
 Identity & $92,00\pm1,71$ & $78,04\pm1,79$ & $59,70\pm1,64$\\
 CLAHE & $94,35\pm1,12$ & $82,80\pm1,46$ & $64,31\pm3,47$\\
 Diffusion & $93,45\pm1,80$ & $83,87\pm2,97$ & $64,88\pm3,84$\\\bottomrule
@@ -516,12 +544,12 @@ Không dùng quan sát test để đổi lựa chọn validation.
 \end{frame}
 
 % 16
-\begin{frame}{Hiệu năng nhận dạng và chi phí xử lý}\relax
+\begin{frame}{5.6. Hiệu năng nhận dạng và chi phí xử lý}\relax
 \begin{columns}[c,onlytextwidth]
 \column{0.54\textwidth}
 \renewcommand{\arraystretch}{1.65}
 \begin{tabular}{lrr}
-\toprule & Macro-F1 & ms/ảnh\\\midrule
+\rowcolor{Blue} \color{white}\bfseries  & \color{white}\bfseries Macro-F1 & \color{white}\bfseries ms/ảnh\\\midrule
 Gamma & 76,81\% & 0,219\\
 CLAHE & 80,14\% & 0,400\\
 Diffusion & 82,71\% & 222,658\\\bottomrule
@@ -541,7 +569,7 @@ Khoảng cách F1 mức vừa là 2,57 điểm phần trăm.
 \end{frame}
 
 % 17
-\begin{frame}{Quy trình tiền xử lý đề xuất}\relax
+\begin{frame}{6.1. Quy trình tiền xử lý đề xuất}\relax
 \begin{enumerate}
 \setlength{\itemsep}{3mm}
 \item Cắt ROI, thêm lề 5\%, chuẩn hóa RGB $64\times64$ về $[0,1]$.
@@ -557,7 +585,7 @@ Khoảng cách F1 mức vừa là 2,57 điểm phần trăm.
 \end{frame}
 
 % 18
-\begin{frame}{Kết luận và hướng phát triển}\relax
+\begin{frame}{6.2. Kết luận và hướng phát triển}\relax
 \textbf{Kết quả chính}\par
 Tăng cường ảnh có thể cải thiện nhận dạng trên cùng ResNet-18.\par
 PSNR/SSIM cao không bảo đảm Accuracy/F1 cao hơn.\par
