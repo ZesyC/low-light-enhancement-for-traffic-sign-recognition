@@ -6,3 +6,9 @@ outputs/
 external
 .DS_Store
 BASELINE_RESEARCH.md
+
+# Local tools and detailed project notes
+/scripts/
+/checks/
+/PROJECT_GUIDE.md
+/DATASETS.md
