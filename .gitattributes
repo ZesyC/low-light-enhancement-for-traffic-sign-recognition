@@ -1,0 +1,4 @@
+outputs/notebook_kaggle/download_v4/gtsrb-notebook-results.zip filter=lfs diff=lfs merge=lfs -text
+outputs/notebook_kaggle/results_v4/outputs/notebook_A/train/cnn_11.pt filter=lfs diff=lfs merge=lfs -text
+outputs/notebook_kaggle/results_v4/outputs/notebook_A/train/cnn_22.pt filter=lfs diff=lfs merge=lfs -text
+outputs/notebook_kaggle/results_v4/outputs/notebook_A/train/cnn_33.pt filter=lfs diff=lfs merge=lfs -text
