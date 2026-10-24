@@ -1,8 +1,0 @@
-_qa/
-latex/*.aux
-latex/*.log
-latex/*.out
-latex/*.toc
-latex/*.xdv
-latex/*.synctex.gz
-latex/main.pdf

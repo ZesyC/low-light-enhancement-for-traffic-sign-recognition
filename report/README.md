@@ -10,9 +10,9 @@
 - `latex/tables/`: bảng LaTeX sinh từ số liệu nguồn.
 - `evidence/`: CSV nguồn và `provenance.json` ghi SHA-256, vị trí cell, giới hạn kiểm chứng.
 - `build_assets.py`: trích xuất và tổng hợp lại kết quả ResNet-18, không đọc kết quả classifier cũ.
-- `report_mau.pdf`: mẫu gốc chỉ giữ ở local, không đưa vào Git.
+- `report_mau.pdf`: mẫu báo cáo gốc chỉ giữ ở local, không đưa vào Git.
 
-`latex/` và `slides/` được giữ riêng ở local và đã loại khỏi Git. Clone repo chỉ có các bản PDF cùng tài liệu/số liệu được theo dõi; hướng dẫn biên dịch dưới đây cần bộ nguồn local.
+Thư mục `report/`, bao gồm nguồn `latex/`, `slides/` và các tệp kiểm tra/biên dịch, có thể được đưa vào Git; riêng `report_mau.pdf` được loại khỏi Git.
 
 ## Biên dịch trên Windows PowerShell
 

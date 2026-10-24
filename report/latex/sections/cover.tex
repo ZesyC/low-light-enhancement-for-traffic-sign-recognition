@@ -1,0 +1,51 @@
+\begin{titlepage}
+\thispagestyle{empty}
+% Draw the cover frame at shipout so the text layout stays unchanged.
+\AddToHookNext{shipout/background}{%
+  \begin{tikzpicture}[remember picture,overlay]
+    \draw[line width=0.8pt]
+      ([xshift=20mm,yshift=-14mm]current page.north west)
+      rectangle
+      ([xshift=-10mm,yshift=14mm]current page.south east);
+  \end{tikzpicture}%
+}
+\begin{center}
+\vspace*{-13mm}
+{\fontsize{14bp}{17bp}\selectfont\bfseries ĐẠI HỌC PHENIKAA\par}
+\vspace{5mm}
+{\fontsize{13bp}{16bp}\selectfont\bfseries TRƯỜNG CÔNG NGHỆ THÔNG TIN PHENIKAA\par}
+\vspace{8mm}
+\includegraphics[width=39.7mm]{phenikaa.jpg}\par
+\vspace{8mm}
+{\fontsize{18bp}{22bp}\selectfont\bfseries BÁO CÁO BÀI TẬP LỚN\par}
+\vspace{3mm}
+{\fontsize{16bp}{19bp}\selectfont\bfseries Nhóm 2\par}
+\vspace{2mm}
+{\fontsize{14bp}{17bp}\selectfont\bfseries MÔN: XỬ LÝ ẢNH\par}
+\vspace{3mm}
+{\fontsize{15bp}{19bp}\selectfont\bfseries KHẢO SÁT ẢNH HƯỞNG CỦA XỬ LÝ ẢNH\par
+ĐẾN HIỆU NĂNG NHẬN DẠNG BIỂN BÁO\par
+GIAO THÔNG TRONG ĐIỀU KIỆN THIẾU SÁNG\par}
+\end{center}
+\vspace{10mm}
+{\centering
+\newlength{\coverinfowidth}
+\settowidth{\coverinfowidth}{{\fontsize{12bp}{17bp}\selectfont 24100093 -- Kiều Thị Thu Trang -- 24100093@st.phenikaa-uni.edu.vn}}
+\begin{minipage}{\coverinfowidth}
+\raggedright
+\setlength{\parskip}{7.2bp}
+Giảng viên hướng dẫn: TS. Nguyễn Ngọc Giang\par
+\vspace{6mm}
+{\fontsize{12bp}{17bp}\selectfont
+24100093 -- Kiều Thị Thu Trang -- 24100093@st.phenikaa-uni.edu.vn\par
+24100012 -- Trần Minh Sang -- 24100012@st.phenikaa-uni.edu.vn\par
+24102651 -- Ngô Quang Thiện -- 24102651@st.phenikaa-uni.edu.vn\par}
+\end{minipage}\par}
+\vfill
+\begin{center}
+\textit{Link Github dự án:}\par
+{\fontsize{11bp}{13bp}\selectfont\url{https://github.com/ZesyC/low-light-enhancement-for-traffic-sign-recognition}\par}
+\vspace{14mm}
+Hà Nội, tháng 10 năm 2026
+\end{center}
+\end{titlepage}
