@@ -1,0 +1,15 @@
+{
+  "study": "denoise_order_extension",
+  "validation_per_class": 30,
+  "subset_per_class": 10,
+  "denoisers": {
+    "gaussian": [{"kernel": 3, "sigma": 0.5}, {"kernel": 5, "sigma": 0.8}],
+    "bilateral": [{"diameter": 5, "sigma_color": 0.05, "sigma_space": 1.5}, {"diameter": 5, "sigma_color": 0.1, "sigma_space": 3.0}],
+    "nlm": [{"h": 3, "h_color": 3, "template": 3, "search": 7}, {"h": 7, "h_color": 7, "template": 3, "search": 7}]
+  },
+  "composition_enhancers": ["gamma", "clahe"],
+  "strength_selection": "Select each denoiser on validation alone, then fix its parameters across both orders.",
+  "fulltest_selection": "Validation selects a paired denoiser/enhancer by mean score of both orders; evaluate both orders and their standalone controls. Also retain best standalone denoiser and overall validation winner.",
+  "test_selection_forbidden": true,
+  "real_lowlight": false
+}

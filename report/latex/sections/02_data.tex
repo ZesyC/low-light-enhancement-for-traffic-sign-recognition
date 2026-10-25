@@ -27,6 +27,11 @@ Tập cách ly gồm 30 ảnh thuộc track có ảnh trùng pixel với tập t
 Các tập 1.290 và 430 ảnh là những tập con của validation và test, không phải dữ liệu bổ sung. Việc lấy cùng số ảnh mỗi lớp giúp khảo sát cân bằng 43 lớp và giảm chi phí chạy nhiều phương pháp. Tuy nhiên, kết quả trên 430 ảnh không đại diện đầy đủ cho phân bố tần suất của 12.630 ảnh test; báo cáo vì thế trình bày hai phạm vi này thành các bảng riêng.
 
 \subsection{Tiền xử lý và chuẩn hóa ảnh}
+\subsubsection{Nguồn nhãn và hình thức học}
+Gói \path{GTSRB_Final_Training_Images.zip} đã chứa ảnh và annotations; mỗi thư mục lớp có file \texttt{GT-<ClassID>.csv}. Cột \texttt{ClassId} cung cấp nhãn 0--42, các cột ROI cung cấp vị trí biển báo. Nhãn test được tải riêng trong \path{GTSRB_Final_Test_GT.zip}~\cite{gtsrbdata}. Vì vậy, không tải một file GT train riêng không đồng nghĩa với dữ liệu train không có nhãn.
+
+Bộ phân loại ResNet-18 học có giám sát: mỗi mẫu trả về cặp ảnh--nhãn, dùng cross-entropy và cập nhật toàn mạng. Ba enhancer học sâu chỉ nạp trọng số tác giả để suy luận; Zero-DCE gốc có cơ chế zero-reference, nhưng điều đó không làm bài toán phân loại GTSRB của dự án trở thành học không giám sát. Các thuật toán truyền thống không có bước huấn luyện.
+
 \subsubsection{Cắt vùng quan tâm}
 Vùng quan tâm (Region of Interest, ROI) được xác định bằng tọa độ chú thích của dữ liệu. Dự án mở rộng vùng này thêm 5\% kích thước theo mỗi phía, đồng thời giới hạn khung cắt trong kích thước ảnh. Phần lề nhỏ giúp giữ đường viền biển báo và một lượng ngữ cảnh xung quanh; nếu cắt sát quá mức, những pixel biên có thể bị loại bỏ trước khi thuật toán tăng cường hoạt động.
 

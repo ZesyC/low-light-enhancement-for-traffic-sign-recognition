@@ -1,68 +1,10 @@
 {
-  "notebook": {
-    "path": "notebooks\\GTSRB_LLIE_Complete_Pipeline_Executed.ipynb",
-    "sha256": "3ac0ab3b6149a77e0a078efe0c256af84bbae3bd20bd2fa833836bbfd9c7a7d8"
-  },
-  "fulltest": {
-    "path": "README.md",
-    "sha256": "5fd2dbfef5eeb61accb15dd2d07c4c1050ae7e639e1d0899f0756b032768f036",
-    "status": "Reported values only; full-test raw artifacts absent locally"
-  },
-  "figures": {
-    "degradation": {
-      "cell_index_zero_based": 7,
-      "output_index_zero_based": 1
-    },
-    "classical_default": {
-      "cell_index_zero_based": 8,
-      "output_index_zero_based": 0
-    },
-    "parameters": {
-      "cell_index_zero_based": 9,
-      "output_index_zero_based": 0
-    },
-    "enhancers_selected": {
-      "cell_index_zero_based": 14,
-      "output_index_zero_based": 0
-    },
-    "subset_f1": {
-      "cell_index_zero_based": 17,
-      "output_index_zero_based": 2
-    },
-    "subset_scatter": {
-      "cell_index_zero_based": 17,
-      "output_index_zero_based": 3
-    },
-    "subset_failures": {
-      "cell_index_zero_based": 17,
-      "output_index_zero_based": 4
-    },
-    "training": {
-      "cell_index_zero_based": 17,
-      "output_index_zero_based": 5
-    },
-    "ablation_original": {
-      "cell_index_zero_based": 20,
-      "output_index_zero_based": 2
-    }
-  },
-  "subset": {
-    "runs": 219,
-    "images_per_run": 430,
-    "training_seeds": [
-      11,
-      22,
-      33
-    ],
-    "noise_seeds": [
-      101,
-      202,
-      303
-    ],
-    "verification": "Reaggregated notebook summaries; original notebook reports prediction-level verification. Raw predictions not available locally."
-  },
-  "ablation": {
-    "source": "Notebook cell 20 output 1; displayed values rounded to 4 decimals"
-  },
-  "excluded": "No legacy classifier experiment artifacts read by this script."
+  "source": "Kaggle notebook version 2, completed; raw predictions audited for all four scopes",
+  "archive_sha256": "c09dfbeafeacfff98e1e21429d5078aa6dfde2ce2a5a774c130dc966a4cf1e6f",
+  "audit": "report/evidence/final/audit.json",
+  "derived_tables": "report/evidence/final/",
+  "selected_method": "pre__gaussian__gamma",
+  "illustrative_images": "degradation, classical_default, parameters, enhancers_selected: historical image-processing illustrations only, never current classifier evidence",
+  "builder_sha256": "657eea06a0c61608d378330c0961037a5292d4f6606e9eaceee849fe5637d13d",
+  "real_lowlight_evaluated": false
 }

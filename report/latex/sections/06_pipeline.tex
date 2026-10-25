@@ -1,72 +1,29 @@
 \section{ĐỀ XUẤT QUY TRÌNH TIỀN XỬ LÝ}
 \subsection{Tiêu chí lựa chọn}
-Mục tiêu cuối của đề bài là cải thiện nhận dạng biển báo, vì vậy Macro-F1 validation được dùng làm tiêu chí chọn chính. Accuracy kiểm tra mức đúng chung; PSNR và SSIM giải thích ảnh đã thay đổi thế nào; thời gian xử lý thể hiện chi phí triển khai. Cách tổ chức này giữ vai trò của chất lượng ảnh trong phân tích nhưng tránh lựa chọn một phương pháp chỉ vì nó tạo ảnh có PSNR cao.
+Mục tiêu là nhận dạng đủ 43 lớp, nên Macro-F1 validation dùng để chọn xử lý; Accuracy và Weighted-F1 kiểm tra bổ sung. PSNR/SSIM giải thích thay đổi ảnh, không quyết định thay hiệu năng nhận dạng. Diffusion được chọn trong nhóm tăng sáng; sau xét thêm khử nhiễu và thứ tự, Gaussian rồi Gamma đạt điểm validation cao nhất (77,77\%) và được chọn trước test.
 
-Quyết định cần được thực hiện trước khi xem kết quả test. Với từng enhancer, chọn tham số trên validation; sau đó so các cấu hình đã chọn bằng cùng tập ảnh và cùng checkpoint. Nếu các phương án nằm trong khoảng dung sai 0,5 điểm phần trăm Macro-F1, ưu tiên phương án nhanh hơn theo quy tắc đã cài đặt. Trong thí nghiệm hiện tại, diffusion vượt ngưỡng gần tương đương so với CLAHE nên được chọn làm pipeline chính.
+Quy trình được chọn không nhất thiết cao nhất ở mọi ô test. CLAHE rồi Gaussian có điểm test mức nặng nhỉnh hơn, nhưng thay lựa chọn sau khi thấy test sẽ làm sai vai trò tập kiểm tra. Mục tiêu khác, như ràng buộc độ trễ, cần được xác định và đánh giá bằng validation.
 
 \subsection{Quy trình được lựa chọn}
-\begin{figure}[htbp]
-\centering
-\setlength{\fboxsep}{7pt}
-\fbox{\parbox{0.86\linewidth}{\centering
-Ảnh GTSRB và ROI chú thích\\[3pt]
-$\downarrow$\\[3pt]
-Cắt ROI + lề 5\%; đổi RGB; resize $64\times64$; chia 255\\[3pt]
-$\downarrow$\\[3pt]
-Trong thực nghiệm: Gamma $\rightarrow$ Poisson $\rightarrow$ Gaussian $\rightarrow$ clip\\[3pt]
-$\downarrow$\\[3pt]
-Diffusion với tham số và trọng số đã khóa\\[3pt]
-$\downarrow$\\[3pt]
-Ảnh tăng cường RGB $64\times64$ trong $[0,1]$\\[3pt]
-$\downarrow$\\[3pt]
-Resize $224\times224$ + chuẩn hóa ImageNet một lần\\[3pt]
-$\downarrow$\\[3pt]
-ResNet-18 cố định $\rightarrow$ nhãn trong 43 lớp
-}}
-\caption{Quy trình tiền xử lý và nhận dạng được chọn. PSNR/SSIM đo trước bước resize cho ResNet-18, với ảnh gốc tương ứng.}
-\label{fig:pipeline}
-\end{figure}
+\begin{figure}[!htbp]\centering\setlength{\fboxsep}{7pt}
+\fbox{\parbox{0.88\linewidth}{\centering
+Ảnh và ROI GTSRB\\[3pt]$\downarrow$\\[3pt]
+Crop + lề 5\%, RGB $64\times64$, chia 255\\[3pt]$\downarrow$\\[3pt]
+Trong thực nghiệm: Gamma làm tối $\to$ Poisson $\to$ Gaussian $\to$ clip\\[3pt]$\downarrow$\\[3pt]
+Gaussian $5\times5$, $\sigma=0,8$, biên phản xạ\\[3pt]$\downarrow$\\[3pt]
+Gamma tăng sáng $\alpha=0,8$ trên RGB float32\\[3pt]$\downarrow$\\[3pt]
+Resize $224\times224$ + chuẩn hóa ImageNet một lần\\[3pt]$\downarrow$\\[3pt]
+ResNet-18 cố định $\to$ một trong 43 lớp
+}}\caption{Quy trình chọn trên validation. PSNR/SSIM tính ở $64\times64$ trước resize CNN.}\label{fig:pipeline}\end{figure}
 
-Trong quy trình này, bước tạo suy giảm chỉ phục vụ thực nghiệm. Khi tiếp nhận một crop thiếu sáng thực, ảnh đó đi trực tiếp vào bộ tăng cường sau chuẩn hóa, không bị làm tối thêm. Ảnh tham chiếu chỉ được sử dụng ở nhánh đánh giá chất lượng khi tồn tại cặp dữ liệu phù hợp.
+Crop thiếu sáng thực đi trực tiếp vào khối lọc và Gamma sau chuẩn hóa, không làm tối thêm. Nhãn và ảnh sáng tham chiếu không được đưa vào pipeline. Bộ đánh giá mới dùng ảnh tham chiếu để đo chất lượng và nhãn để chấm phân loại. Bộ lọc dùng \texttt{BORDER\_REFLECT\_101}; không có chuyển 8 bit trong chuỗi Gaussian--Gamma.
 
-Diffusion dùng trọng số EMA và 10 bước lấy mẫu như cấu hình đã khảo sát. Kết quả được kiểm tra kích thước, số kênh và giá trị hữu hạn trước khi chặn về $[0,1]$. ResNet-18 giữ nguyên checkpoint, không thích nghi lại theo ảnh tăng cường trong quá trình test. Mỗi phương pháp còn lại được thay vào đúng vị trí enhancer khi thực hiện phép so sánh.
+Đầu ra được kiểm tra kích thước, ba kênh, miền giá trị và tính hữu hạn. Ba checkpoint giữ nguyên, không thích nghi theo test. Điểm validation và F1 full-test không tự tạo thành bảo đảm an toàn cho hệ thống hỗ trợ lái xe.
 
-\subsection{Phương án xử lý nhẹ bằng CLAHE}
-Đối với tình huống ngân sách xử lý hạn chế, CLAHE với clip limit 2 và lưới $4\times4$ là ứng viên đáng ưu tiên trong các phương pháp truyền thống. Trên tập con, cấu hình này cải thiện Macro-F1 ở cả ba mức so với Identity và có chi phí thấp. Khối xử lý được mô tả theo thứ tự:
-\begin{equation}
-Y_{\mathrm{RGB}}\ \longrightarrow\ YCrCb\ \longrightarrow\
-\operatorname{CLAHE}(Y)\ \longrightarrow\ RGB.
-\end{equation}
-Hai kênh sắc độ được giữ trong quá trình cân bằng, chỉ kênh độ sáng được biến đổi. Đầu ra đưa về số thực $[0,1]$ trước khi đi qua cùng ResNet-18. Cấu hình này không cần tham số theo từng lớp biển báo và không cần ảnh tham chiếu khi suy luận.
+\subsection{Đối chứng và tổ chức cài đặt}
+Identity, Gamma, CLAHE, diffusion và Gaussian đơn lẻ giúp phân biệt lợi ích từng thành phần. So hai thứ tự Gaussian--CLAHE giữ clip limit 1, lưới $4\times4$ và cùng tham số Gaussian. Đổi cả độ mạnh lẫn thứ tự sẽ không còn cô lập được ảnh hưởng của thứ tự.
 
-Tuy nhiên, báo cáo không đề xuất tự động chuyển giữa CLAHE và diffusion theo mức tối ngay từ kết quả hiện có. Một cơ chế chọn thích nghi sẽ cần tiêu chí đo mức tối, ngưỡng quyết định và đánh giá validation riêng. Các mức mild/medium/severe trong thí nghiệm là tham số sinh dữ liệu đã biết, không phải nhãn điều kiện luôn có sẵn ở thời điểm triển khai.
+Mã xử lý ở \path{src/degradation.py}, \path{src/enhancement.py} và \path{src/tools/processing_pipeline.py}. \path{src/tools/processing_study.py} chọn tham số, khóa giao thức; \path{src/metrics.py} tính metric; cấu hình ở \path{configs/}. Tham số, split, mã ảnh và hash checkpoint đi kèm kết quả để tái lập từng phép so sánh.
 
-\subsection{Tổ chức cài đặt và tái lập}
-\begin{table}[htbp]
-\centering
-\caption{Các thành phần mã nguồn liên quan trực tiếp đến quy trình.}
-{\fontsize{11.5bp}{13.5bp}\selectfont
-\begin{tabular}{P{5.3cm}P{8.7cm}}
-\toprule
-Thành phần & Trách nhiệm \\
-\midrule
-\texttt{src/data.py} & Cắt ROI, chia track, kiểm kê và chọn tập con \\
-\texttt{src/degradation.py} & Sinh ảnh tối bằng Gamma, Poisson và Gaussian \\
-\texttt{src/enhancement.py} & Bốn phép truyền thống và adapter cho ba mô hình sâu \\
-\texttt{src/model.py} & ResNet-18, resize và chuẩn hóa đầu vào \\
-\texttt{src/metrics.py} & PSNR, SSIM, Accuracy và F1-score \\
-\texttt{src/experiment.py} & Chọn tham số, khóa giao thức, đánh giá \\
-\texttt{src/reporting.py} & Tổng hợp metric, tương quan và biểu đồ \\
-\texttt{configs/resnet18.json} & Cấu hình thống nhất của thí nghiệm \\
-\bottomrule
-\end{tabular}}
-\end{table}
-
-Quá trình tái lập cần sử dụng cùng cấu hình, danh sách mã ảnh, trọng số và phiên bản mã nguồn. Sau khi chuẩn bị dữ liệu, huấn luyện ba seed clean, chọn enhancer trên validation và khóa giao thức. Chỉ sau đó mới chạy test. Thí nghiệm ablation sử dụng lại checkpoint và tham số đã chọn, thay đổi riêng mô hình suy giảm.
-
-Notebook đã chạy là tài liệu thực nghiệm kèm kết quả của báo cáo. Trong thư mục báo cáo, các bảng được lưu ở dạng CSV, kèm mã trích xuất và thông tin SHA-256 của nguồn. Việc lưu cả số liệu và nguồn giúp kiểm tra một ô trong bảng mà không phải đọc lại toàn bộ log hoặc huấn luyện mô hình.
-
-\subsection{Hướng cải thiện quy trình}
-Kết quả ablation cho thấy nhiễu là một yếu tố cần ưu tiên. Một hướng mở rộng hợp lý là khảo sát khử nhiễu trước hoặc phối hợp với tăng sáng, nhưng phải kiểm tra xem bộ lọc có làm mất nét chữ số hay không. Đây là hướng nghiên cứu tiếp theo, chưa được xem là thành phần đã triển khai hoặc đã chứng minh tốt hơn trong báo cáo.
-
-Một hướng khác là đánh giá trên dữ liệu thiếu sáng thực có nhãn tương thích, và bổ sung chỉ số riêng cho biên, màu hoặc khả năng đọc nét số. Nếu có ảnh tham chiếu ghép cặp chính xác, có thể tiếp tục dùng PSNR/SSIM; nếu không, cần thiết kế giao thức khác. Mọi thay đổi đều phải được lựa chọn trên validation và kiểm tra bằng cùng một bộ nhận dạng để giữ đúng mục tiêu khảo sát xử lý ảnh.
+\subsection{Hướng đánh giá tiếp theo}
+Ưu tiên dữ liệu thiếu sáng thực có nhãn tương thích, kiểm tra lỗi nét số/biên/màu và toàn cảnh có detector. Không có ảnh sáng ghép cặp chính xác thì không tính PSNR/SSIM như thí nghiệm tổng hợp. Cần thêm kiến trúc nhận dạng, điều kiện thu nhận và kiểm định ghép cặp có kiểm soát để khẳng định ưu thế ngoài trung bình mô tả hiện tại.

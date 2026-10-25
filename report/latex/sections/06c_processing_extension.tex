@@ -1,0 +1,52 @@
+\subsection{Khử nhiễu và thứ tự xử lý}
+\label{sec:processing-extension}
+Khảo sát khử nhiễu kiểm tra ảnh hưởng của lọc không gian và thứ tự phối hợp với tăng sáng. Cấu hình được chọn trên validation; kết quả subset và full-test trình bày ở phần thực nghiệm.
+
+\subsubsection{Câu hỏi và phạm vi khảo sát}
+Để làm rõ ảnh hưởng của xử lý ảnh ngoài tăng độ sáng, nghiên cứu khảo sát ba bộ lọc khử nhiễu và hai thứ tự kết hợp với tăng sáng. Ba câu hỏi đặt ra là: khử nhiễu đơn lẻ có cải thiện phân loại ảnh thiếu sáng không; việc giữ biên hoặc so sánh vùng ảnh có bảo toàn chi tiết phân biệt lớp tốt hơn làm trơn thông thường không; và nên khử nhiễu trước hay sau tăng sáng? Nghiên cứu tiếp tục giới hạn ở ảnh biển báo đã cắt ROI và suy giảm tổng hợp, chưa suy rộng sang phát hiện biển báo toàn cảnh hoặc hệ thống cảnh báo trong xe.
+
+\subsubsection{Cơ chế các bộ lọc và giả thuyết}
+Với ảnh nhiễu $I$, bộ lọc Gaussian cho ảnh đầu ra
+\begin{equation}
+ D_G(I)(p)=\sum_{q\in\mathcal N(p)}G_{\sigma}(p-q)I(q),
+ \qquad \sum_{q\in\mathcal N(p)}G_{\sigma}(p-q)=1.
+\end{equation}
+Trung bình có trọng số làm giảm dao động cục bộ nhưng có thể làm mờ chữ số và đường viền nhỏ trên crop $64\times64$. Bilateral thêm trọng số theo khác biệt màu:
+\begin{equation}
+ D_B(I)(p)=\frac{1}{W_p}\sum_{q\in\mathcal N(p)}
+ e^{-\|p-q\|^2/(2\sigma_s^2)}
+ e^{-\|I(p)-I(q)\|^2/(2\sigma_c^2)}I(q),
+\end{equation}
+trong đó $W_p$ chuẩn hóa tổng trọng số. Cơ chế này hạn chế trộn qua biên có chênh lệch màu lớn; nhiễu mạnh vẫn có thể làm sai ước lượng độ tương tự. Non-local Means (NLM) dùng dạng $D_N(I)(p)=\sum_q w(p,q)I(q)$, với trọng số dựa trên độ giống nhau giữa các mảnh ảnh thay vì chỉ khoảng cách điểm ảnh. Tham số lọc mạnh có thể loại nhiễu tốt hơn nhưng đồng thời xóa chi tiết. Việc cài đặt dùng các hàm OpenCV, không huấn luyện thêm bộ khử nhiễu~\cite{opencv_filter,opencv_nlm}.
+
+Gaussian và bilateral xử lý RGB float32 trong $[0,1]$. NLM màu của OpenCV yêu cầu uint8: làm tròn về 8 bit, đổi RGB sang BGR, gọi bộ lọc màu rồi chuyển về RGB float32; xử lý màu nội bộ của hàm dựa trên không gian Lab. Vì vậy, tác động NLM bao gồm cả bước lượng tử hóa; cần nêu giới hạn này khi diễn giải PSNR/SSIM, không quy toàn bộ thay đổi cho nguyên lý NLM.
+
+Với phép tăng sáng $E$ và khử nhiễu $D$, so sánh $E(D(I))$ với $D(E(I))$. Hai phép nói chung không giao hoán vì tăng sáng là phi tuyến và bộ lọc có thể phụ thuộc cường độ. Khử nhiễu trước có thể hạn chế khuếch đại nhiễu; tăng sáng trước có thể làm cấu trúc dễ phân biệt hơn nhưng cũng khuếch đại sai lệch. Hai thứ tự được kiểm tra trực tiếp, không mặc định thứ tự nào tốt hơn trước khi đo kết quả.
+
+\subsubsection{Thiết kế chọn tham số công bằng}
+Giữ nguyên split theo track, ảnh crop, ba mức suy giảm, noise seed 101/202/303 và ba checkpoint seed 11/22/33. Không fine-tune CNN bằng ảnh tối hay đầu ra bộ lọc. Chọn tham số trên đúng 1.290 ảnh validation đã dùng cho thí nghiệm tăng sáng, không dùng nhãn test để chọn phương pháp. Cấu hình được khóa trong \path{configs/processing_extension.json}.
+
+\begin{table}[!htbp]
+\centering\small
+\caption{Lưới tham số khử nhiễu, lựa chọn bằng validation.}
+\begin{tabular}{P{3.0cm}P{10.5cm}}
+\toprule
+Thành phần & Cấu hình và vai trò \\
+\midrule
+Gaussian & $(k,\sigma)=(3,0{,}5)$ hoặc $(5,0{,}8)$; đối chứng làm trơn cục bộ \\
+Bilateral & $d=5$; $(\sigma_c,\sigma_s)=(0{,}05,1{,}5)$ hoặc $(0{,}10,3)$, màu trên thang $[0,1]$ \\
+NLM màu & $h=h_{color}=3$ hoặc $7$ trên thang 8 bit; cửa sổ mẫu 3, tìm kiếm 7 \\
+Tăng sáng kết hợp & Gamma và CLAHE, giữ tham số đã chọn từ validation đối chứng \\
+Thứ tự & Cả khử nhiễu $\to$ tăng sáng và tăng sáng $\to$ khử nhiễu \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Đầu tiên, chọn một độ mạnh cho từng bộ lọc dựa trên Macro-F1 của \textit{khử nhiễu đơn lẻ}. Sau đó cố định cùng tham số này cho cả hai thứ tự với từng phép tăng sáng. Có 6 cấu hình đơn lẻ và 12 chuỗi kết hợp cần đánh giá thêm trên validation; sau chọn độ mạnh, tập ứng viên test có 3 bộ lọc đơn lẻ và 12 chuỗi. Cách cố định tham số giúp tránh nhầm ảnh hưởng của thứ tự với ảnh hưởng của độ mạnh bộ lọc. Identity, Gamma, CLAHE và pipeline đối chứng đã chọn được giữ để so sánh ghép cặp; nếu trùng thì chỉ tính một lần.
+
+\subsubsection{Khóa subset, full-test và cách phân tích}
+Nghiên cứu sử dụng subset 430 ảnh để đánh giá toàn bộ họ phương pháp sau khi chọn độ mạnh. Tập phương pháp full-test được chọn \textit{trước khi đọc kết quả subset}: validation chọn cặp bộ lọc--tăng sáng có điểm trung bình hai thứ tự cao nhất; giữ cả hai thứ tự, hai phép đơn lẻ tương ứng, bộ lọc đơn lẻ tốt nhất và ứng viên tổng thể tốt nhất, cùng các đối chứng. Do đó full-test khảo sát tập ứng viên đã sàng lọc, không phải mọi tổ hợp. Hai giao thức được khóa cùng lúc, ghi ID, tham số, hash mã và hash checkpoint.
+
+Đánh giá Accuracy, Macro-F1, Weighted-F1, PSNR, SSIM và thời gian xử lý. Trung bình noise seed trong từng checkpoint rồi tổng hợp trung bình và độ lệch chuẩn qua ba checkpoint, theo cùng quy ước tổng hợp. Phân tích bổ sung gồm F1 từng lớp, confusion matrix, số ảnh chuyển từ sai sang đúng và đúng sang sai so với Identity, và chênh lệch giữa hai thứ tự trên cùng ảnh. Thời gian đo cho khối xử lý sau warm-up, không phải độ trễ toàn bộ camera. Nếu chất lượng ảnh tăng nhưng Macro-F1 giảm, cần kiểm tra chi tiết màu, đường viền và chữ số thay vì kết luận bộ lọc tốt chỉ từ PSNR/SSIM.
+
+Các bước xử lý không nhận nhãn hoặc ảnh sáng tham chiếu; chỉ bộ đánh giá sử dụng chúng để chấm điểm. Các phương pháp phải nhận cùng đầu vào suy giảm và cùng bộ phân loại. Phân tích thứ tự sử dụng cặp cấu hình có tham số giống nhau, tránh nhầm tác động của độ mạnh bộ lọc với tác động của thứ tự xử lý. Các chuỗi mới được đo trong cùng phiên và phạm vi tác vụ; thời gian đối chứng dùng lại từ phiên khác chỉ mang tính mô tả.

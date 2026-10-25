@@ -1,0 +1,41 @@
+{
+  "archive": "C:\\Users\\trang\\Desktop\\low-light-enhancement-for-traffic-sign-recognition\\outputs\\kaggle-20261025-v2\\gtsrb-notebook-results.zip",
+  "archive_sha256": "c09dfbeafeacfff98e1e21429d5078aa6dfde2ce2a5a774c130dc966a4cf1e6f",
+  "status": "all_exported_files_and_raw_test_predictions_verified",
+  "scopes": {
+    "baseline_fulltest": {
+      "runs": 219,
+      "images_per_run": 12630,
+      "prediction_rows": 2765970,
+      "confusion_matrices_verified": 219,
+      "metrics_tolerance": 1e-08
+    },
+    "baseline_subset": {
+      "runs": 219,
+      "images_per_run": 430,
+      "prediction_rows": 94170,
+      "confusion_matrices_verified": 0,
+      "metrics_tolerance": 1e-08
+    },
+    "extension_subset": {
+      "runs": 516,
+      "images_per_run": 430,
+      "prediction_rows": 221880,
+      "confusion_matrices_verified": 516,
+      "metrics_tolerance": 1e-08
+    },
+    "extension_fulltest": {
+      "runs": 219,
+      "images_per_run": 12630,
+      "prediction_rows": 2765970,
+      "confusion_matrices_verified": 219,
+      "metrics_tolerance": 1e-08
+    }
+  },
+  "checkpoint_hashes": {
+    "11": "1eb63e6c674f592c066eded4b02923c093019264a2be1db757f1015936ad7164",
+    "22": "9c0ae677c945180c1568b63f839215864b53988a55b156f75a210eeb5139c351",
+    "33": "e186234a5acabe38d6093c2573d23355c3d59b6539fa1f971b219cd2a66e1936"
+  },
+  "aggregation": "Mean noise within checkpoint, then mean and sample SD across checkpoints."
+}

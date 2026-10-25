@@ -1,0 +1,7 @@
+sample_id,category,class_id,before,after
+gtsrb/test/00010,helped,12,40,12
+gtsrb/test/00020,helped,4,5,4
+gtsrb/test/00176,harmed,3,3,5
+gtsrb/test/00513,harmed,22,22,19
+gtsrb/test/00012,still_wrong,23,5,5
+gtsrb/test/00013,still_wrong,7,38,3

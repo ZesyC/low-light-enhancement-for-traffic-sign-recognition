@@ -2,38 +2,32 @@
 
 Đề tài: **Khảo sát ảnh hưởng của xử lý ảnh đến hiệu năng nhận dạng biển báo giao thông trong điều kiện thiếu sáng.**
 
-- [Báo cáo PDF](bao_cao.pdf): bản báo cáo hoàn chỉnh.
-- [Slide PDF](thuyet_trinh.pdf): bản thuyết trình.
-- `latex/main.tex`: tài liệu chính, biên dịch bằng XeLaTeX.
-- `latex/sections/`: nội dung tiếng Việt chia theo phần.
-- `latex/images/`: hình thực nghiệm trích từ notebook ResNet-18 và biểu đồ giải tích.
-- `latex/tables/`: bảng LaTeX sinh từ số liệu nguồn.
-- `evidence/`: CSV nguồn và `provenance.json` ghi SHA-256, vị trí cell, giới hạn kiểm chứng.
-- `build_assets.py`: trích xuất và tổng hợp lại kết quả ResNet-18, không đọc kết quả classifier cũ.
-- `report_mau.pdf`: mẫu báo cáo gốc chỉ giữ ở local, không đưa vào Git.
+- [Báo cáo PDF](bao_cao.pdf) · [Slide PDF](thuyet_trinh.pdf).
+- [Notebook Kaggle](https://www.kaggle.com/code/kieuthithutrang/gtsrb-low-light-enhancement-for-traffic-signs): phiên 2 đã hoàn tất toàn bộ khảo sát kết hợp.
+- `latex/sections/`: nội dung; `latex/tables/` và `latex/images/`: bảng/hình; `slides/main.tex`: nguồn slide.
+- `evidence/final/`: bằng chứng hiện tại; `provenance.json`: nguồn và giới hạn kiểm chứng. Các CSV lịch sử ngoài `final/` không được dùng để sinh bảng hiện tại.
 
-Thư mục `report/`, bao gồm nguồn `latex/`, `slides/` và các tệp kiểm tra/biên dịch, có thể được đưa vào Git; riêng `report_mau.pdf` được loại khỏi Git.
+Nghiên cứu so sánh bảy enhancer, Gaussian/bilateral/NLM và hai thứ tự với Gamma/CLAHE trên cùng ba checkpoint ResNet-18. Phần khử nhiễu nằm trong phương pháp, thực nghiệm, thảo luận và kết luận; không còn phụ lục dự kiến. Validation chọn Gaussian 5×5, sigma 0,8 rồi Gamma 0,8; không chọn lại bằng test.
 
-## Biên dịch trên Windows PowerShell
+Đã tính lại metric từ **5.847.990 dòng dự đoán**: baseline subset/full-test và khảo sát kết hợp subset/full-test. Một phần đối chứng được dùng lại, không phải quan sát độc lập mới. So khớp 954 confusion matrix lưu trong ZIP, kiểm tra hash ba CNN và mọi file xuất. Tương quan dùng chất lượng ảnh và metric nhận dạng trên cùng phạm vi. Hình xử lý minh họa được phân biệt với bằng chứng dự đoán hiện tại trong provenance.
 
-Chạy từ thư mục gốc dự án, dùng MiKTeX/XeLaTeX và font Times New Roman đã có trên máy:
+## Tái tạo bảng và hình
+
+Tải `gtsrb-notebook-results.zip` từ Output của notebook, giữ nguyên gói gốc. Từ thư mục gốc repo:
 
 ```powershell
-Push-Location report/latex
-xelatex --disable-installer -interaction=nonstopmode -halt-on-error main.tex
-xelatex --disable-installer -interaction=nonstopmode -halt-on-error main.tex
-Pop-Location
-Copy-Item -LiteralPath report/latex/main.pdf -Destination report/bao_cao.pdf
+python -m src.tools.verified_results --archive outputs/kaggle-20261025-v2/gtsrb-notebook-results.zip --output outputs/verified-new --require-extension
+python report/latex/build_assets.py --archive outputs/kaggle-20261025-v2/gtsrb-notebook-results.zip --evidence outputs/verified-new
 ```
 
-Hai lượt biên dịch cập nhật mục lục, số hình/bảng và tham chiếu. `--disable-installer` ngăn MiKTeX tự cài thêm gói. Không cần BibTeX hoặc kết nối Internet khi biên dịch. Khi tải lên Overleaf, tải toàn bộ thư mục `latex/`, chọn compiler XeLaTeX; nếu môi trường không có Times New Roman, cần cung cấp font hợp lệ hoặc dùng TeX Gyre Termes và chấp nhận khác biệt kiểu chữ.
+Thư mục kiểm chứng phải mới. Bộ sinh bảng chỉ chấp nhận ZIP có hash khớp biên bản và đủ cả bốn phạm vi; không trích số từ notebook lịch sử. Dùng Python, NumPy, Matplotlib và PyTorch của dự án.
 
-Để tạo lại bảng/hình từ nguồn đang có, chạy `python report/build_assets.py` từ gốc dự án. Script dùng Python stdlib, NumPy và Matplotlib đã có trong requirements của dự án; không cài thêm dependency. Logo là ảnh nhúng trích từ trang bìa mẫu; script không tạo lại logo.
+## Biên dịch PDF
 
-## Định dạng và nguồn
+Chạy `powershell -File report/latex/build.ps1` với XeLaTeX; hoặc truyền `-Compiler <đường-dẫn-tuyệt-đối-tectonic.exe>`. Build trong `_build/`, sau đó cập nhật `bao_cao.pdf`. Tectonic có thể cần mạng để tải gói; XeLaTeX cần cài đủ gói trước.
 
-Mẫu có 31 trang, A4, một cột, Times New Roman; phần thân chủ yếu 12,5 pt PDF, khoảng cách dòng khoảng 14,4 pt. Báo cáo dùng 12,5 bp/14,4 bp trong XeLaTeX để tương đương đơn vị PDF; lề trái 30 mm, phải 20 mm, trên 32 mm, dưới 30 mm; căn đều, không thụt đầu dòng, tiêu đề đậm đánh số, số trang giữa chân trang. Bìa có khung viền đen, giữ trường, Nhóm 2 và thành viên của mẫu; môn đổi thành Xử lý ảnh và giảng viên hướng dẫn là TS. Nguyễn Ngọc Giang.
+Slide: từ `report/slides/`, dùng `tectonic --keep-logs --outdir _build main.tex`, rồi chép `_build/main.pdf` thành `report/thuyet_trinh.pdf`.
 
-Toàn bộ số liệu nhận dạng dùng **ResNet-18**. Bộ 219 lượt × 430 ảnh và 288 lượt ablation lấy từ notebook đã thực thi; script tính lại tổng hợp 219 bản ghi và tương quan. Kiểm chứng mức dự đoán từng ảnh là kết quả được ghi trong notebook, không phải chạy lại tại máy này. Full-test 12.630 ảnh lấy từ README và được tách rõ, không ghép với PSNR/SSIM của subset. Không sử dụng kết quả hoặc hình từ thí nghiệm classifier cũ.
+Báo cáo dùng A4, Times New Roman 12,5 bp; lề trái/phải 30/20 mm, trên/dưới 32/30 mm; bìa Nhóm 2, môn Xử lý ảnh, giảng viên TS. Nguyễn Ngọc Giang. Slide dùng Arial, khung 16:9. Khi dùng Overleaf chọn XeLaTeX và cung cấp font hợp lệ hoặc đổi sang font tương đương.
 
-Các phương pháp: Gamma, HE, CLAHE, MSR giản lược, Zero-DCE, Retinexformer, Wavelet-based Diffusion; Identity là đối chứng. PSNR/SSIM đo tại 64×64; ResNet-18 nhận ảnh 224×224 sau resize và normalize. Mục tiêu lựa chọn là Macro-F1 validation; không lấy kết quả test để chọn lại pipeline.
+Git giữ PDF cuối, nguồn LaTeX, hình và bảng bằng chứng gọn. Ảnh GTSRB, checkpoint, ZIP thô, cache, mẫu và kết quả QA giữ local. Dữ liệu nghiên cứu là ROI thiếu sáng mô phỏng; chưa có đánh giá camera đêm thực, video hoặc detector.

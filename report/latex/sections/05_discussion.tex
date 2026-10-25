@@ -1,96 +1,53 @@
 \section{THẢO LUẬN KẾT QUẢ VÀ PHÂN TÍCH TƯƠNG QUAN}
 \subsection{Chất lượng ảnh cao có bảo đảm nhận dạng tốt?}
-Ở mức tối vừa của tập con, Zero-DCE đạt PSNR 20,08 dB, cao hơn diffusion 14,90 dB. Tuy nhiên, Macro-F1 của Zero-DCE chỉ đạt 69,30\%, thấp hơn cả Identity 75,35\%, trong khi diffusion đạt 82,71\%. Nếu chỉ chọn theo PSNR, kết luận sẽ không phù hợp với mục tiêu nhận dạng của đề bài.
+Trên full-test mức vừa, Zero-DCE đạt PSNR 19,98 dB, cao hơn diffusion 14,77 dB, nhưng Macro-F1 chỉ đạt 72,34\% so với 81,57\%. Xếp hạng theo sai số pixel vì thế không thay thế được xếp hạng nhận dạng.
 
-Một ví dụ khác xuất hiện ở mức nặng: Retinexformer có PSNR 17,39 dB nhưng Macro-F1 52,57\%, còn diffusion có PSNR 14,88 dB và Macro-F1 63,72\%. Sự khác biệt cho thấy tiêu chí giữ cường độ gần ảnh gốc không bảo đảm giữ đúng những đặc trưng mà ResNet-18 sử dụng.
+Khảo sát khử nhiễu còn cho phản ví dụ với cả hai chỉ số ảnh. Ở mức nặng, Gaussian đơn lẻ có PSNR 13,78 dB và SSIM 0,2847, thấp hơn diffusion 14,79 dB và 0,4768; tuy nhiên Macro-F1 của Gaussian đạt 68,60\%, cao hơn diffusion 62,46\%. Phép xử lý có thể giữ đặc trưng phân lớp hữu ích dù ảnh đầu ra còn tối và chưa gần ảnh tham chiếu về cấu trúc trung bình.
 
-SSIM có xu hướng phù hợp hơn trong một số điều kiện. Ở mức nặng, diffusion dẫn đầu cả SSIM lẫn Macro-F1 trong tập con. Dù vậy, ở mức vừa CLAHE có SSIM 0,5568, cao hơn diffusion 0,5410, nhưng Macro-F1 thấp hơn. SSIM vì thế cũng chỉ là chỉ số bổ trợ, không phải hàm thay thế trực tiếp cho hiệu năng nhận dạng.
+Gaussian rồi Gamma ở mức vừa đạt PSNR 17,62 dB, SSIM 0,5996 và Macro-F1 85,54\%. Cải thiện đồng thời là kết quả đo trong giao thức này; không bảo đảm tăng PSNR/SSIM sẽ luôn tăng F1. Chỉ số ảnh đo sai khác trên toàn crop, trong khi CNN có thể phụ thuộc mạnh vào vùng nhỏ chứa nét số, viền hoặc biểu tượng.
 
-Về mặt cơ chế, các phép xử lý có thể tạo sai lệch độ sáng hoặc màu trên vùng lớn nhưng vẫn làm rõ nét chữ và viền. Ngược lại, một thuật toán có thể giảm sai số trung bình bằng cách làm mượt, đồng thời xóa mất chi tiết nhỏ. Đây là những cách giải thích hợp lý cho chênh lệch metric; để xác định nguyên nhân của từng mẫu cần quan sát ảnh và dự đoán ghép cặp, không thể suy ra chắc chắn chỉ từ bảng trung bình.
-
-\subsection{Phương pháp phân tích tương quan}
-Tương quan được tính riêng theo từng mức suy giảm. Mỗi phương pháp là một điểm gồm chất lượng ảnh trung bình và hiệu năng nhận dạng trung bình trên cùng 430 ảnh. Có tám điểm khi tính cả Identity. Clean bị loại khỏi phân tích vì PSNR của ảnh so với chính nó là vô hạn và vì đây không phải một phương án phục hồi ảnh tối.
-
-Hệ số Pearson đo mức liên hệ tuyến tính giữa hai đại lượng:
+\subsection{Phương pháp và kết quả phân tích tương quan}
+Tương quan tính riêng từng mức, với tám phương pháp tăng sáng/đối chứng, dùng chất lượng ảnh và nhận dạng trên cùng full-test 12.630 ảnh. Mỗi phương pháp là một điểm; loại clean vì PSNR vô hạn và không phải phương án phục hồi. Pearson đo liên hệ tuyến tính:
 \begin{equation}
-r=\frac{\sum_i(x_i-\overline{x})(y_i-\overline{y})}
-{\sqrt{\sum_i(x_i-\overline{x})^2}\sqrt{\sum_i(y_i-\overline{y})^2}}.
+r=\frac{\sum_i(x_i-\bar x)(y_i-\bar y)}
+{\sqrt{\sum_i(x_i-\bar x)^2}\sqrt{\sum_i(y_i-\bar y)^2}}.
 \end{equation}
-Spearman được tính bằng Pearson trên thứ hạng, dùng thứ hạng trung bình nếu có giá trị bằng nhau. Hệ số này giúp xem thứ tự phương pháp theo chất lượng ảnh có phù hợp với thứ tự theo khả năng nhận dạng hay không, kể cả khi quan hệ không tuyến tính.
+Spearman là Pearson trên thứ hạng, dùng thứ hạng trung bình khi bằng nhau.
+\begin{table}[!htbp]\centering
+\caption{Tương quan trên full-test, $n=8$ phương pháp tăng sáng/đối chứng mỗi hàng.}
+\begin{tabular}{lllrr}\toprule Mức & Chất lượng & Nhận dạng & Pearson & Spearman\\\midrule
+\tableinput{tables/correlations}\bottomrule\end{tabular}\label{tab:corr}\end{table}
 
-\begin{table}[htbp]
-\centering
-\caption{Tương quan chất lượng ảnh và nhận dạng của ResNet-18 trên tập con. Mỗi hàng có $n=8$ phương pháp, cùng mức suy giảm.}
-\begin{tabular}{lllrr}
-\toprule
-Mức & Chất lượng & Nhận dạng & Pearson & Spearman \\
-\midrule
-\tableinput{tables/correlations}
-\bottomrule
-\end{tabular}
-\label{tab:corr}
-\end{table}
+Spearman giữa PSNR và Macro-F1 giảm từ 0,667 ở mức nhẹ xuống 0,357 ở mức vừa và 0,286 ở mức nặng. Với SSIM và Macro-F1, các giá trị tương ứng là 0,714; 0,738 và 0,619. SSIM phù hợp hơn với thứ hạng F1 trong tám phương án này, nhưng phản ví dụ Gaussian--diffusion cho thấy nó cũng không thể chọn thay metric nhận dạng.
+\fig{subset_scatter.png}{1}{PSNR/SSIM và Macro-F1 mức vừa trên full-test. Mỗi điểm là phương pháp, không phải một ảnh độc lập.}{fig:scatter}
 
-Các hệ số Pearson trong Bảng~\ref{tab:corr} đều dương, cho thấy chất lượng ảnh và hiệu năng nhận dạng có liên hệ cùng chiều khi xét toàn bộ tám phương pháp. Tuy nhiên, Spearman giữa PSNR và Macro-F1 giảm từ 0,667 ở mức nhẹ xuống 0,333 ở mức vừa và 0,286 ở mức nặng. Do đó, khi suy giảm mạnh hơn, xếp hạng theo PSNR trở nên ít phù hợp hơn với xếp hạng nhận dạng.
+Tám điểm là quy mô nhỏ và chia sẻ ảnh, nhiễu, checkpoint. Một phương pháp thấp ở cả hai trục như MSR có thể ảnh hưởng đáng kể tới Pearson. Đây là thống kê khám phá, không chứng minh nhân quả hay tính khái quát tới camera đêm. Tương quan của khảo sát kết hợp được lưu riêng; không gộp các chuỗi có chung thành phần để tăng số điểm hình thức.
 
-Với SSIM và Macro-F1, Spearman bằng 0,619 ở cả mức vừa và nặng, cao hơn tương ứng của PSNR. Quan sát này cho thấy thông tin cấu trúc hữu ích cho phân tích, nhưng không đủ để xác định một phương pháp tối ưu chỉ bằng SSIM. Các trường hợp đảo thứ hạng giữa CLAHE và diffusion vẫn tồn tại.
+\subsection{Ablation: tách độ tối và từng thành phần nhiễu}
+Ablation giữ $\gamma_d=2,2$, checkpoint và tham số tăng sáng; thay riêng bốn mô hình suy giảm: chỉ Gamma, thêm Gaussian $\sigma=0,01$, thêm Poisson $p=60$, và thêm cả hai. Ma trận có $4\times3\times8\times3=288$ lượt trên 430 ảnh. Với Gamma-only, noise seed không tạo ảnh mới nên không xem là nguồn quan sát độc lập.
+\begin{table}[!htbp]\centering
+\caption{Macro-F1 (\%) khi tách thành phần suy giảm; cùng tham số xử lý đã chọn.}
+{\small\begin{tabular}{lrrrr}\toprule Phương pháp & Chỉ Gamma & + Gaussian & + Poisson & + Cả hai\\\midrule
+\tableinput{tables/ablation}\bottomrule\end{tabular}}\label{tab:ablation}\end{table}
 
-\fig{subset_scatter.png}{0.88}{Quan hệ giữa SSIM và Macro-F1 ở mức tối vừa, trích từ notebook ResNet-18. Mỗi điểm biểu diễn một phương pháp, không phải một ảnh độc lập.}{fig:scatter}
+MSR đạt 98,36\% với Gamma-only nhưng còn 57,84\% khi thêm cả hai nhiễu. Zero-DCE giảm từ 97,49\% xuống 68,90\%; diffusion từ 94,74\% xuống 78,89\%. Kết quả củng cố yêu cầu xét nhiễu khi đánh giá tăng sáng. Không thể kết luận Poisson luôn nghiêm trọng hơn Gaussian vì hai mức nhiễu chưa được cân bằng về năng lượng.
+\fig{ablation.pdf}{1}{Ảnh hưởng từng thành phần suy giảm trên subset, tính từ bảng ablation cùng gói kết quả.}{fig:ablation}
 
-Số điểm trong phân tích rất nhỏ và các phương pháp sử dụng chung ảnh, nhiễu cũng như checkpoint. Vì vậy, các điểm không độc lập theo nghĩa thí nghiệm ngẫu nhiên. Một phương pháp có kết quả thấp ở cả hai trục, chẳng hạn MSR, có thể ảnh hưởng đáng kể đến Pearson. Báo cáo xem đây là phân tích khám phá, không suy ra quan hệ nhân quả và không dùng hệ số tương quan để bảo đảm hiệu quả trên ảnh đêm thực.
+\subsection{Diễn giải hiệu quả khử nhiễu và thứ tự}
+Gaussian giảm dao động cục bộ, phù hợp với một thành phần nhiễu được cài trực tiếp trong mô hình suy giảm. Đặt trước Gamma có thể hạn chế khuếch đại nhiễu vùng tối. Đổi lại, bộ lọc làm mềm nét số và biên. F1 tốt trong mô hình nhiễu tổng hợp không bảo đảm tốt với lóa đèn, nhòe chuyển động hoặc nhiễu cảm biến thực.
 
-\subsection{Ablation: tách tác động của độ tối và nhiễu}
-Để kiểm tra ảnh hưởng của từng thành phần suy giảm, notebook giữ $\gamma_d=2,2$ và khảo sát bốn biến thể: chỉ Gamma; Gamma kèm Gaussian với $\sigma_n=0,01$; Gamma kèm Poisson với $p=60$; Gamma kèm cả hai. Các bộ tăng cường giữ nguyên tham số đã chọn; ResNet-18 giữ nguyên checkpoint. Không chọn lại phương pháp riêng cho từng hàng ablation.
+Bilateral và NLM có cơ chế giữ biên hoặc dùng độ tương tự mảnh ảnh, nhưng không mặc nhiên tốt hơn Gaussian trên crop nhỏ. Lưới tham số hữu hạn; NLM còn có lượng tử hóa 8 bit và chuyển màu nội bộ. Chênh lệch thuộc cả cấu hình triển khai, không tách riêng nguyên lý lọc khỏi mọi bước chuyển đổi.
+\begin{table}[!htbp]\centering
+\caption{PSNR (dB) / SSIM trên full-test của các phương pháp đã sàng lọc.}
+{\fontsize{10.5bp}{12bp}\selectfont\begin{tabular}{lccc}\toprule Phương pháp & Nhẹ & Vừa & Nặng\\\midrule
+\tableinput{tables/extension_quality}\bottomrule\end{tabular}}\label{tab:extquality}\end{table}
 
-Ma trận phụ gồm $4\times3\times8\times3=288$ lượt trên 430 ảnh. Với trường hợp chỉ Gamma, thay noise seed không tạo ra nhiễu mới; các lượt tương ứng không được hiểu là những ảnh suy giảm độc lập. Bảng dưới trình bày trung bình Macro-F1 từ đầu ra notebook, làm tròn đến hai chữ số phần trăm.
+\subsection{Chi phí xử lý và giới hạn triển khai}
+\begin{table}[!htbp]\centering
+\caption{Độ trễ enhancer mức vừa trên full-test nhóm tăng sáng, ms/ảnh.}
+\begin{tabular}{lr}\toprule Phương pháp & Thời gian\\\midrule
+\tableinput{tables/latency}\bottomrule\end{tabular}\label{tab:latency}\end{table}
 
-\begin{table}[htbp]
-\centering
-\caption{Macro-F1 (\%) của ResNet-18 khi tách thành phần suy giảm ở mức Gamma 2,2.}
-{\fontsize{11.5bp}{13.5bp}\selectfont
-\begin{tabular}{lrrrr}
-\toprule
-Phương pháp & Chỉ Gamma & + Gaussian & + Poisson & + Cả hai \\
-\midrule
-\tableinput{tables/ablation}
-\bottomrule
-\end{tabular}}
-\label{tab:ablation}
-\end{table}
+GPU thực nghiệm là Tesla T4. Phép truyền thống chạy CPU; mô hình sâu chạy GPU theo adapter. Thời gian enhancer loại trừ tạo nhiễu, I/O, metric và CNN; chưa phải độ trễ camera. Ở phiên khảo sát khử nhiễu, Gaussian rồi Gamma đo khoảng 0,293 ms/ảnh và CLAHE rồi Gaussian khoảng 0,688 ms/ảnh mức vừa. Đối chứng tăng sáng dùng lại từ phiên khác, nên tỷ số thời gian giữa đối chứng và chuỗi mới không phải phép đo tốc độ có kiểm soát trong cùng phiên.
 
-MSR đạt Macro-F1 98,20\% khi chỉ có Gamma, nhưng giảm xuống 73,33\% với Gaussian và 50,35\% với Poisson. Khi thêm cả hai thành phần nhiễu, kết quả còn 50,97\%, giảm 47,23 điểm phần trăm so với Gamma-only. Đây là bằng chứng rõ rằng phép xử lý hiệu quả với ảnh tối đơn thuần có thể không bền vững khi xuất hiện nhiễu.
-
-Với Zero-DCE, Macro-F1 từ 97,48\% ở Gamma-only giảm còn 69,30\% khi có cả hai nhiễu. Diffusion giảm từ 95,04\% xuống 82,71\%, còn CLAHE giảm từ 93,30\% xuống 80,14\%. Trong cấu hình khảo sát, diffusion giữ hiệu năng tốt hơn khi nhiễu được đưa vào, dù không đứng đầu trường hợp chỉ Gamma.
-
-\fig{ablation.pdf}{1}{Ảnh hưởng của từng thành phần nhiễu lên một số phương pháp đại diện. Biểu đồ dựng lại từ bảng ablation ResNet-18 trong notebook.}{fig:ablation}
-
-Trong nhiều hàng, Poisson gây giảm F1 mạnh hơn Gaussian. Kết luận này chỉ đúng với mức $p=60$ và $\sigma_n=0,01$ đã chọn; hai loại nhiễu không được cân bằng về năng lượng nên không thể kết luận Poisson luôn nghiêm trọng hơn Gaussian. Ngoài ra, MSR ở trường hợp cả hai nhiễu cao hơn một chút so với chỉ Poisson, cho thấy tác động kết hợp không nhất thiết đơn điệu trên metric phân loại.
-
-\subsection{Chi phí xử lý và khả năng triển khai}
-\begin{table}[htbp]
-\centering
-\caption{Độ trễ trung bình của khối tăng cường ở mức vừa, trích từ 219 bản ghi notebook ResNet-18. Đơn vị ms/ảnh.}
-\begin{tabular}{lr}
-\toprule
-Phương pháp & Thời gian \\
-\midrule
-\tableinput{tables/latency}
-\bottomrule
-\end{tabular}
-\label{tab:latency}
-\end{table}
-
-Notebook ghi thiết bị GPU Tesla T4; các phép truyền thống trong mã nguồn chạy trên CPU, còn các mô hình sâu chạy trên thiết bị suy luận được cấu hình. Độ trễ được đo cho khối enhancer, không bao gồm toàn bộ quy trình phát hiện, cắt biển báo và phân loại. Mốc Identity vẫn có chi phí gọi hàm và quản lý dữ liệu nên thời gian đo không bằng 0.
-
-CLAHE mất khoảng 0,400 ms/ảnh, còn diffusion khoảng 222,658 ms/ảnh ở mức vừa của notebook. Tỷ lệ chênh lệch xấp xỉ 557 lần, trong khi Macro-F1 khác khoảng 2,57 điểm phần trăm. So sánh này cho thấy cần xét ngân sách tính toán khi lựa chọn phương pháp, nhưng không được suy ra tốc độ toàn hệ thống chỉ từ thời gian enhancer.
-
-Nếu yêu cầu ưu tiên chất lượng nhận dạng trong giao thức đã khảo sát, diffusion là lựa chọn phù hợp với quyết định validation. Nếu cần một phương án xử lý nhẹ, dễ triển khai, CLAHE là ứng viên thực tế để đánh giá tiếp. Việc thay đổi mục tiêu sang ràng buộc thời gian phải được quyết định và kiểm tra trên validation, không chọn lại sau khi xem test.
-
-\subsection{Giới hạn của thực nghiệm}
-Thứ nhất, ảnh thiếu sáng là ảnh tổng hợp trong miền RGB. Mô hình chưa mô tả đầy đủ phản ứng cảm biến, cân bằng trắng, nén ảnh, mưa, phản xạ gương, lóa đèn hoặc nhòe chuyển động. Khả năng khái quát đến camera giao thông ban đêm vì thế cần dữ liệu thực riêng.
-
-Thứ hai, dữ liệu đầu vào đã được cắt biển báo. Kết quả chưa phản ánh lỗi phát hiện ROI trong ảnh toàn cảnh. Nếu detector bỏ sót hoặc cắt sai vị trí, bộ tăng cường crop không thể tự sửa được vấn đề đó.
-
-Thứ ba, khảo sát chi tiết dùng 430 ảnh cân bằng lớp và ba training seed. Đây là quy mô phù hợp để khảo sát nhiều biến thể nhưng chưa đủ khẳng định ưu thế thống kê cho những khoảng cách rất nhỏ. Kết quả full-test được đối chiếu từ tài liệu dự án và cần bộ dự đoán gốc để kiểm định lại chênh lệch ghép cặp.
-
-Thứ tư, lưới tham số còn hữu hạn và các bộ tăng cường sâu dùng trọng số đã học trên miền khác. Từ ``tối ưu'' trong báo cáo được hiểu là tốt nhất theo tiêu chí validation trong tập phương án đã khảo sát, không phải tối ưu tuyệt đối cho mọi dữ liệu và mọi thiết bị.
+Thí nghiệm giới hạn ở RGB $64\times64$, ROI có sẵn, một kiến trúc CNN, ba checkpoint và một mô hình thiếu sáng tổng hợp. Chưa có dữ liệu camera đêm thực, detector, video hoặc kiểm định ý nghĩa thống kê cho từng chênh lệch nhỏ. Lưới tham số hữu hạn và enhancer học trên miền khác; tối ưu chỉ có nghĩa tốt nhất theo validation trong tập phương án đã xét.

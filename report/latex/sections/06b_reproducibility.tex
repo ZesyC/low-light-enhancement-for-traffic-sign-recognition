@@ -1,0 +1,12 @@
+\subsection{Tái lập thực nghiệm}
+\subsubsection{Mã nguồn và môi trường}
+Notebook công khai kèm mã và cấu hình:
+\begin{center}
+\href{https://www.kaggle.com/code/kieuthithutrang/gtsrb-low-light-enhancement-for-traffic-signs}{\textbf{GTSRB: Low-Light Enhancement for Traffic Signs}}
+\end{center}
+Dữ liệu tải từ archive GTSRB chính thức; mã và weights enhancer khóa theo nguồn tác giả, commit và SHA-256. Khi so sánh, giữ nguyên split, mã ảnh, mức suy giảm, noise seed và ba checkpoint. Tham số chọn trên validation trước test. Hướng dẫn nằm trong \path{README.md} và \path{configs/}.
+
+\subsubsection{Bằng chứng và tính nhất quán}
+Gói kết quả giữ giao thức, trạng thái, dự đoán CSV và confusion matrix NPZ. Đã tính lại Accuracy, Macro-F1, Weighted-F1 từ 5.847.990 dòng dự đoán ở bốn phạm vi, sai số so bảng tổng hợp không quá $10^{-8}$; hash ba CNN khớp giữa các phạm vi. Đối chứng dùng lại được ghi nguồn, không coi là quan sát độc lập mới. Kiểm tra nhãn/group giữa các lượt không thay thế xác minh nhãn độc lập trên ảnh nguồn.
+
+Bằng chứng gọn và provenance ở \path{report/evidence/final/}. ZIP không kèm ảnh GTSRB, cache hoặc weights enhancer tác giả; các đầu vào này được xác định bằng nguồn tải và cấu hình. Checkpoint CNN do nhóm huấn luyện được giữ để tái lập. SHA-256 phát hiện thay đổi file, không tự chứng minh tính đúng của kết luận nghiên cứu.

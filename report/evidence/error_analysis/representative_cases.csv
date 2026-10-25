@@ -1,0 +1,7 @@
+run_id,condition,method,train_seed,noise_seed,sample_id,class_id,category,before,after,before_path,after_path
+de90c559e46e4641,medium,diffusion,11,101,gtsrb/test/00326,9,helped,5,9,data/cache/0de774fe35acf68b/dc8aa8e7a9f92838.npy,data/cache/0e68a890be1fcaf8/dc8aa8e7a9f92838.npy
+de90c559e46e4641,medium,diffusion,11,101,gtsrb/test/00489,14,helped,8,14,data/cache/0de774fe35acf68b/106066c4fe28becf.npy,data/cache/0e68a890be1fcaf8/106066c4fe28becf.npy
+de90c559e46e4641,medium,diffusion,11,101,gtsrb/test/02687,5,harmed,5,15,data/cache/0de774fe35acf68b/f544457901340b85.npy,data/cache/0e68a890be1fcaf8/f544457901340b85.npy
+de90c559e46e4641,medium,diffusion,11,101,gtsrb/test/04504,0,harmed,0,8,data/cache/0de774fe35acf68b/a40972f135121ee3.npy,data/cache/0e68a890be1fcaf8/a40972f135121ee3.npy
+de90c559e46e4641,medium,diffusion,11,101,gtsrb/test/00339,22,still_wrong,25,25,data/cache/0de774fe35acf68b/296bceaeb2abd2fb.npy,data/cache/0e68a890be1fcaf8/296bceaeb2abd2fb.npy
+de90c559e46e4641,medium,diffusion,11,101,gtsrb/test/00363,39,still_wrong,5,25,data/cache/0de774fe35acf68b/aaac884d8630b32a.npy,data/cache/0e68a890be1fcaf8/aaac884d8630b32a.npy

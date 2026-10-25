@@ -1,0 +1,30 @@
+\subsection{Cơ chế học sâu và liên hệ với sai số nhận dạng}
+\subsubsection{Đường cong lặp của Zero-DCE}
+Thay vì ước lượng trực tiếp ảnh sáng, Zero-DCE dự đoán bản đồ hệ số $A_n$ và áp dụng đường cong nhiều lần~\cite{zerodce}:
+\begin{equation}
+I_{n+1}=I_n+A_n\odot I_n\odot(1-I_n),\qquad A_n\in[-1,1].
+\end{equation}
+Với một hệ số cố định $a$, đạo hàm theo cường độ là $1+a(1-2I)$ và không âm trên miền hợp lệ. Điều này mô tả tính đơn điệu của đường cong tại một vị trí, không bảo đảm thứ tự giữa hai pixel có hệ số khác nhau. Với $a>0$, mức tăng bằng $aI(1-I)$, đạt lớn nhất gần $I=0,5$ và bằng 0 tại hai đầu. Pixel bị clipping hoàn toàn về 0 vì thế không thể được khôi phục chỉ bằng phép biến đổi này.
+
+Hàm mục tiêu gốc kết hợp tính nhất quán không gian, kiểm soát phơi sáng, tính ổn định màu và độ trơn của bản đồ hệ số~\cite{zerodce}. Các ràng buộc không yêu cầu nhãn lớp biển báo. Chúng cũng không tối ưu trực tiếp việc phân biệt nét số hoặc hình mũi tên. Khi bản đồ đường cong nâng cả tín hiệu lẫn nhiễu, ảnh nhìn sáng hơn nhưng đặc trưng phân lớp vẫn có thể bị thay đổi. Đây là giả thuyết cơ chế, cần đối chiếu từng mẫu thay vì coi là nguyên nhân đã được xác nhận.
+
+\subsubsection{Thông tin chiếu sáng trong Retinexformer}
+Retinexformer dùng khung một giai đoạn gồm ước lượng chiếu sáng, nâng sáng và khôi phục suy giảm; đặc trưng chiếu sáng hướng dẫn tương tác giữa các vùng trong Transformer~\cite{retinexformer}. Có thể mô tả chức năng bằng sơ đồ:
+\begin{equation}
+(\widehat{L},F_L)=g(Y),\qquad Y_{\mathrm{up}}=Y\odot\widehat{L},\qquad
+\widehat{X}=h(Y_{\mathrm{up}},F_L).
+\end{equation}
+Trong sơ đồ này $\widehat{L}$ là bản đồ nâng sáng và $F_L$ là đặc trưng chiếu sáng; biểu thức mô tả vai trò các khối, không thay thế toàn bộ công thức attention của bài báo. Khác với MSR giản lược, bộ phục hồi có tham số học được và tận dụng quan hệ không cục bộ. Tuy nhiên, trọng số LOL-v1 không được tối ưu riêng cho crop biển báo có nét rất nhỏ và nhiễu Poisson--Gaussian đang xét. Hiệu năng thấp hơn CLAHE trên GTSRB vì thế không phủ định kết quả của phương pháp trên các benchmark gốc.
+
+\subsubsection{Wavelet và diffusion có điều kiện}
+Biến đổi wavelet tách ảnh thành thành phần tần số thấp $LL$ và các thành phần chi tiết $LH,HL,HH$. Phương pháp Wavelet-based Diffusion LLIE sử dụng diffusion có điều kiện trong miền wavelet kết hợp khôi phục thành phần tần số cao~\cite{diffusion}. Công thức nhiễu thuận điển hình của diffusion là:
+\begin{equation}
+z_t=\sqrt{\overline{\alpha}_t}\,z_0+
+\sqrt{1-\overline{\alpha}_t}\,\epsilon,\qquad \epsilon\sim\mathcal{N}(0,I).
+\end{equation}
+Ở đây $z_0$ là biểu diễn đích trong miền mà diffusion làm việc, không phải công thức tạo thiếu sáng của dự án. Khi suy luận, mô hình dùng điều kiện từ ảnh tối và nhiều bước khử nhiễu để ước lượng biểu diễn phục hồi trước khi tái tạo ảnh. Phân tách tần số giúp giải thích vì sao phương pháp có thể xử lý đồng thời chiếu sáng và chi tiết; không có bảo đảm rằng mọi nét số nhỏ đều được giữ đúng.
+
+Thiết lập 10 bước, EMA và sampler của tác giả là cấu hình suy luận trong dự án. Không huấn luyện một diffusion mới trên GTSRB và không dùng nhãn biển báo để cập nhật bộ tăng cường. Độ trễ đã đo chỉ cho khối tăng cường crop; không quy đổi trực tiếp thành FPS camera.
+
+\subsubsection{Mục tiêu phục hồi và mục tiêu phân loại khác nhau}
+Giả sử đặc trưng của bộ phân loại là $f$ và phép tăng cường là $E$. Giảm $\|E(Y)-X\|^2$ không kéo theo giảm $\|f(E(Y))-f(X)\|$; mạng có thể nhạy với sai khác tại một vùng nhỏ chứa chữ số hoặc biểu tượng. Để kiểm tra tác động này, cần giữ cố định $f$, so sánh dự đoán trên cùng ảnh và thống kê cả trường hợp được sửa đúng lẫn bị làm sai. Phân tích ghép cặp ở phần sau thực hiện đúng nguyên tắc đó.

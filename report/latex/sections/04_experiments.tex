@@ -26,7 +26,7 @@ Chọn checkpoint & Macro-F1 validation clean tốt nhất \\
 
 Trong huấn luyện, các phép tăng cường nhẹ gồm xoay tối đa $10^\circ$, tịnh tiến tối đa 5\%, thay đổi nhẹ sáng/tương phản/bão hòa và xóa ngẫu nhiên một vùng nhỏ. Không lật ngang biển báo vì có thể thay đổi ý nghĩa hướng di chuyển. Cụm từ ``huấn luyện clean'' ở đây nghĩa là không huấn luyện bằng mô hình thiếu sáng Gamma--Poisson--Gaussian của thí nghiệm, không có nghĩa là loại bỏ mọi augmentation.
 
-Ba checkpoint tốt nhất trong notebook nằm ở epoch 12, 10 và 3 tương ứng seed 11, 22 và 33; huấn luyện dừng ở epoch 17, 14 và 8. Sau bước này, trọng số được giữ cố định cho mọi phương pháp xử lý. Do vậy, chênh lệch dự đoán trong mỗi checkpoint phản ánh ảnh hưởng của đầu vào đã được biến đổi.
+Ba checkpoint tốt nhất nằm ở epoch 3, 6 và 14 tương ứng seed 11, 22 và 33; lịch sử huấn luyện kết thúc ở epoch 8, 11 và 15. Checkpoint lưu Macro-F1 validation cao nhất; bộ đếm dừng sớm dùng mức cải thiện tối thiểu 0,001 nên không nhất thiết dừng đúng năm epoch sau checkpoint cuối. Sau huấn luyện, trọng số được giữ cố định cho mọi phép xử lý.
 
 \subsection{Chỉ số đánh giá nhận dạng}
 Accuracy là tỷ lệ mẫu được phân loại đúng:
@@ -44,105 +44,79 @@ Mỗi lớp đóng góp như nhau vào Macro-F1, phù hợp với yêu cầu nh�
 
 Các bảng F1 trong báo cáo dùng Macro-F1 và ghi rõ đơn vị phần trăm. Chênh lệch giữa hai giá trị phần trăm được gọi là \textit{điểm phần trăm}, tránh nhầm với tỷ lệ cải thiện tương đối.
 
+
+
 \subsection{Giao thức chọn tham số và tổng hợp số liệu}
-Mỗi phương pháp có tham số được chọn trên 1.290 ảnh validation. Điểm lựa chọn là Macro-F1 trung bình qua ba mức suy giảm, ba noise seed và ba training seed. Gamma thử ba số mũ; CLAHE thử sáu cấu hình; MSR thử hai bộ tỉ lệ. HE không có tham số cần chọn trong cài đặt này. Ba bộ tăng cường sâu giữ cấu hình và trọng số công bố.
+Tham số của bảy bộ tăng cường được chọn trên 1.290 ảnh validation, cân bằng 30 ảnh/lớp. Điểm chọn là Macro-F1 trung bình qua ba mức suy giảm, ba noise seed và ba checkpoint. Gamma thử ba số mũ; CLAHE thử sáu cấu hình; MSR thử hai bộ tỉ lệ. Mô hình sâu giữ trọng số tác giả. Với nhóm tăng sáng, các phương án cách điểm tốt nhất dưới 0,005 được so tiếp theo độ trễ; diffusion được chọn với Macro-F1 validation 72,77\%, so với CLAHE 68,86\%.
 
-Sau khi chọn cấu hình tốt nhất của từng phương pháp, quy tắc chọn pipeline xét các ứng viên có Macro-F1 cách điểm tốt nhất dưới 0,005, tương đương 0,5 điểm phần trăm, rồi ưu tiên thời gian xử lý thấp hơn. Quy tắc này được xác định trước test. Trong notebook, diffusion có Macro-F1 validation khoảng 75,96\%, cao hơn CLAHE 72,02\%, do đó diffusion là phương pháp được chọn.
+Khảo sát khử nhiễu dùng lại đúng tập validation và các checkpoint này. Đầu tiên chọn độ mạnh của mỗi bộ lọc khi chạy đơn lẻ, sau đó giữ nguyên tham số khi so hai thứ tự với Gamma và CLAHE. Sáu cấu hình bộ lọc và 12 chuỗi được đánh giá thêm; khi chọn độ mạnh xong, có 19 phương pháp test gồm bốn đối chứng và 15 cấu hình khử nhiễu/kết hợp. Ứng viên tổng thể được chọn bằng Macro-F1 validation lớn nhất; không chọn lại từ bảng test.
 
-Số lượt đánh giá test của ma trận chính là:
+Trong mọi bảng, trung bình qua noise seed trước trong từng checkpoint rồi mới lấy mean và độ lệch chuẩn mẫu qua ba checkpoint:
 \begin{equation}
-3+3\times3\times3\times8=219.
+\overline m_t=\frac{1}{3}\sum_{n=1}^{3}m_{t,n},\quad
+\mu=\frac{1}{3}\sum_{t=1}^{3}\overline m_t,\quad
+s=\sqrt{\frac{\sum_t(\overline m_t-\mu)^2}{2}}.
 \end{equation}
-Ba lượt đầu là clean cho ba checkpoint. Phần còn lại là tích của training seed, mức suy giảm, noise seed và tám phương pháp tính cả Identity. Với tập con 430 ảnh, có 94.170 dự đoán. Notebook lưu kết quả kiểm chứng gồm hash checkpoint, độ phủ mã ảnh/nhãn và việc tính lại metric nhận dạng.
+Các noise seed và checkpoint sử dụng chung ảnh, không được coi là những ảnh độc lập. Độ lệch chuẩn qua checkpoint cũng không đo mức biến thiên PSNR/SSIM giữa ảnh.
 
-Khi tổng hợp, trước hết lấy trung bình qua noise seed trong từng training seed, sau đó tính trung bình và độ lệch chuẩn mẫu qua ba training seed:
-\begin{equation}
-\overline{m}_t=\frac{1}{3}\sum_{n=1}^{3}m_{t,n},\qquad
-\mu=\frac{1}{3}\sum_{t=1}^{3}\overline{m}_t,\qquad
-s=\sqrt{\frac{\sum_{t=1}^{3}(\overline{m}_t-\mu)^2}{2}}.
-\end{equation}
-Ba mức noise seed không được xem là ba lần huấn luyện độc lập. Các chỉ số ảnh không phụ thuộc training seed khi bộ tăng cường và ảnh đầu vào giữ nguyên. Độ lệch chuẩn qua training seed vì thế không phải thước đo biến thiên chất lượng ảnh giữa các mẫu.
+\subsection{Phạm vi đánh giá và kiểm tra bằng chứng}
+Nhóm tăng sáng có $3+3\times3\times3\times8=219$ lượt ở mỗi phạm vi: subset 430 ảnh và full-test 12.630 ảnh. Khảo sát khử nhiễu có $3+27\times19=516$ lượt subset. Full-test giữ tám phương pháp được khóa bằng validation, gồm các đối chứng, bộ lọc tốt nhất, cả hai thứ tự của cặp được chọn và ứng viên tổng thể tốt nhất; tổng cộng 219 lượt. Việc sàng lọc full-test được thực hiện trước khi đọc kết quả subset.
+\begin{table}[!htbp]\centering
+\caption{Phạm vi và số dòng dự đoán đã kiểm tra; bao gồm đối chứng dùng lại, không phải toàn bộ quan sát độc lập.}
+\begin{tabular}{lrrr}\toprule Khảo sát & Ảnh/lượt & Lượt & Dòng dự đoán\\\midrule
+Tăng sáng, subset & 430 & 219 & 94.170\\
+Tăng sáng, full-test & 12.630 & 219 & 2.765.970\\
+Khử nhiễu/kết hợp, subset & 430 & 516 & 221.880\\
+Khử nhiễu/kết hợp, full-test & 12.630 & 219 & 2.765.970\\\bottomrule
+\end{tabular}\label{tab:coverage}\end{table}
 
-\subsection{Nguồn kết quả và khả năng đối chiếu}
-Phân tích chi tiết sử dụng notebook đã chạy \path{GTSRB_LLIE_Complete_Pipeline_Executed.ipynb}. Tệp này chứa hình ảnh, 219 bản ghi kết quả ResNet-18 trên 430 ảnh, bảng ablation và đầu ra kiểm chứng. Các bảng trong báo cáo được tổng hợp lại từ các bản ghi đó; hình minh họa được trích nguyên từ đầu ra notebook. Các cell được dùng gồm 7--9 (minh họa xử lý ảnh), 13--14 (validation và tham số đã chọn), 16--17 (kết quả test) và 20 (ablation), đánh số từ 0. Bảng full-test lấy từ README và được ghi nguồn riêng trong nội dung; bảng tổng hợp, tương quan và thông tin kiểm tra nguồn được lưu trong thư mục \texttt{report/evidence/}.
+Tổng cộng 5.847.990 dòng dự đoán được đối chiếu ID, nhãn, group ID và cấu hình. Accuracy, Macro-F1, Weighted-F1 được tính lại và khớp bảng tổng hợp với sai số tuyệt đối không quá $10^{-8}$. Confusion matrix lưu trong ZIP được đối chiếu cho 954 lượt có ma trận; subset tăng sáng được tính lại từ CSV. Hash ba checkpoint nhất quán giữa cả bốn phạm vi. Đối chứng được dùng lại chính xác thay vì suy luận lại; số dòng lưu thêm không làm tăng số ảnh nguồn. Các bảng được sinh từ cùng gói kết quả và biên bản trong \path{report/evidence/final/}.
 
-Bảng full-test 12.630 ảnh được lấy riêng từ README của dự án. Đây là thí nghiệm ResNet-18 khác với lần chạy notebook. Trong bản sao dự án dùng để soạn báo cáo chưa có thư mục kết quả full-test tương ứng, nên báo cáo không tuyên bố đã kiểm tra lại dự đoán từng ảnh của thí nghiệm này. Không ghép PSNR/SSIM của tập con với Macro-F1 full-test để tính tương quan.
+\subsection{Chất lượng ảnh của các phương pháp tăng sáng}
+\begin{table}[!htbp]\centering
+\caption{PSNR (dB) / SSIM trên subset 430 ảnh; mỗi ô ghi PSNR trước, SSIM sau.}
+{\small\begin{tabular}{lccc}\toprule Phương pháp & Nhẹ & Vừa & Nặng\\\midrule
+\tableinput{tables/quality}\bottomrule\end{tabular}}\label{tab:quality}\end{table}
+Các phương pháp làm thay đổi cả độ sáng, cấu trúc và nhiễu. Phương pháp có PSNR cao nhất không nhất thiết có SSIM cao nhất; xếp hạng cũng thay đổi theo mức suy giảm. Bảng này mô tả chất lượng trên subset. Phân tích tương quan ở phần sau sử dụng chất lượng ảnh và nhận dạng cùng đo trên full-test, không ghép hai phạm vi.
 
-\subsection{Chất lượng ảnh trên tập con 430 ảnh}
-\begin{table}[htbp]
-\centering
-\caption{PSNR (dB) / SSIM của notebook ResNet-18 trên 430 ảnh. Mỗi ô ghi PSNR trước, SSIM sau.}
-{\fontsize{11.5bp}{13.5bp}\selectfont
-\begin{tabular}{lccc}
-\toprule
-Phương pháp & Tối nhẹ & Tối vừa & Tối nặng \\
-\midrule
-\tableinput{tables/quality}
-\bottomrule
-\end{tabular}}
-\label{tab:quality}
-\end{table}
+\subsection{Nhận dạng trên subset 430 ảnh}
+\begin{table}[!htbp]\centering
+\caption{Accuracy (\%), mean $\pm$ sample SD trên subset 430 ảnh.}
+{\small\begin{tabular}{lccc}\toprule Phương pháp & Nhẹ & Vừa & Nặng\\\midrule
+\tableinput{tables/subset_acc}\bottomrule\end{tabular}}\label{tab:acc}\end{table}
+\begin{table}[!htbp]\centering
+\caption{Macro-F1 (\%), mean $\pm$ sample SD trên cùng subset.}
+{\small\begin{tabular}{lccc}\toprule Phương pháp & Nhẹ & Vừa & Nặng\\\midrule
+\tableinput{tables/subset_f1}\bottomrule\end{tabular}}\label{tab:subsetf1}\end{table}
+Macro-F1 của Identity lần lượt là 88,33\%; 72,79\%; 53,45\% ở mức nhẹ, vừa và nặng; diffusion đạt 91,75\%; 78,89\%; 58,96\%. Sự suy giảm còn lại ở mức nặng cho thấy nâng sáng không thể khôi phục hoàn toàn thông tin. Các khoảng cách phải được đọc cùng SD qua checkpoint.
+\fig{subset_f1.png}{0.95}{Macro-F1 trên subset; cùng checkpoint và cùng ảnh tối được dùng cho các phương pháp.}{fig:subsetf1}
 
-Ở mức nhẹ, Gamma đạt PSNR 23,94 dB và SSIM 0,7011, cao hơn Identity ở cả hai chỉ số. Điều này phù hợp với tính chất của phép biến đổi Gamma khi suy giảm chưa quá mạnh: một mức nâng sáng vừa phải giúp giảm sai lệch cường độ mà chưa phải trả giá lớn về nhiễu.
+\subsection{Đánh giá tăng sáng trên full-test}
+\begin{table}[!htbp]\centering
+\caption{Macro-F1 (\%) trên toàn bộ 12.630 ảnh test, tính lại từ dự đoán thô.}
+{\small\begin{tabular}{lccc}\toprule Phương pháp & Nhẹ & Vừa & Nặng\\\midrule
+\tableinput{tables/fulltest}\bottomrule\end{tabular}}\label{tab:full}\end{table}
+Trên ảnh clean, Accuracy đạt $99,22\%\pm0,28$ và Macro-F1 đạt $98,94\%\pm0,32$. Identity đạt Macro-F1 90,45\%; 76,07\%; 58,37\%, còn diffusion đạt 93,63\%; 81,57\%; 62,46\%. Đây là đánh giá trên cùng ba CNN, không huấn luyện lại theo phương pháp. Chênh lệch với subset đến từ phạm vi ảnh khác nhau; hai bảng được tổng hợp riêng.
 
-Ở mức vừa, Zero-DCE có PSNR cao nhất trong bảng (20,08 dB), còn CLAHE có SSIM cao nhất (0,5568). Diffusion đạt PSNR 14,90 dB, thấp hơn Identity 15,37 dB, nhưng SSIM tăng từ 0,3410 lên 0,5410. Hai thước đo đã đưa ra những đánh giá khác nhau: sai lệch cường độ không đồng nhất với mức bảo toàn cấu trúc.
+\subsection{Khử nhiễu và các chuỗi kết hợp}
+Trên validation, Gaussian chọn kernel $5\times5$, $\sigma=0,8$; bilateral chọn $d=5$, $\sigma_c=0,10$, $\sigma_s=3$; NLM chọn $h=h_{\mathrm{color}}=7$, cửa sổ mẫu 3 và tìm kiếm 7. Chuỗi Gaussian rồi Gamma đạt 77,77\% Macro-F1 validation, cao hơn diffusion 72,77\%, và được chọn trước test.
+\begin{table}[!htbp]\centering
+\caption{Macro-F1 (\%) của 15 cấu hình khử nhiễu/kết hợp trên subset. Mũi tên là thứ tự áp dụng; cùng tham số bộ lọc cho mỗi cặp.}
+{\fontsize{10.5bp}{12bp}\selectfont\begin{tabular}{lccc}\toprule Phương pháp & Nhẹ & Vừa & Nặng\\\midrule
+\tableinput{tables/extension_subset}\bottomrule\end{tabular}}\label{tab:extsubset}\end{table}
+Gaussian đơn lẻ cải thiện nhận dạng dù không chủ động tăng sáng. Bilateral rồi tăng sáng thường tốt hơn thứ tự ngược trong tập cấu hình này; với NLM, xu hướng có thể đổi chiều. Không có quy tắc thứ tự chung cho mọi bộ lọc. Giữ cùng độ mạnh trong mỗi cặp là điều kiện để diễn giải khác biệt.
+\begin{table}[!htbp]\centering
+\caption{Macro-F1 (\%) của tám phương pháp đã khóa cho full-test. Gaussian $\to$ Gamma được chọn bằng validation.}
+{\fontsize{10.5bp}{12bp}\selectfont\begin{tabular}{lccc}\toprule Phương pháp & Nhẹ & Vừa & Nặng\\\midrule
+\tableinput{tables/extension_fulltest}\bottomrule\end{tabular}}\label{tab:extfull}\end{table}
+\begin{table}[!htbp]\centering
+\caption{Accuracy (\%) trên cùng full-test của khảo sát kết hợp.}
+{\fontsize{10.5bp}{12bp}\selectfont\begin{tabular}{lccc}\toprule Phương pháp & Nhẹ & Vừa & Nặng\\\midrule
+\tableinput{tables/extension_acc}\bottomrule\end{tabular}}\label{tab:extacc}\end{table}
+Gaussian rồi Gamma đạt Macro-F1 96,70\%; 85,54\%; 71,56\%, tăng 6,25; 9,47; 13,19 điểm phần trăm so Identity. Ở mức vừa, Accuracy tăng từ 72,32\% lên 83,75\%. Ở mức nặng, CLAHE rồi Gaussian có điểm test cao hơn chuỗi được chọn khoảng 0,21 điểm phần trăm. Kết quả này được báo cáo để phân tích, không dùng thay quyết định validation; khoảng cách nhỏ chưa chứng minh ưu thế thống kê.
+\fig{extension_f1.png}{0.95}{Full-test giữa đối chứng, tăng sáng, Gaussian đơn lẻ và hai chuỗi đại diện.}{fig:extensionf1}
 
-Ở mức nặng, Retinexformer có PSNR cao nhất (17,39 dB), trong khi diffusion có SSIM cao nhất (0,4720). MSR có PSNR thấp ở cả ba mức và SSIM giảm rõ khi nhiễu mạnh. Các kết quả này cho thấy không có phương pháp đứng đầu đồng thời ở mọi chỉ số và mọi điều kiện.
+\subsection{Ảnh hưởng của thứ tự trên full-test}
+Cặp Gaussian--CLAHE được validation chọn để giữ cả hai thứ tự trên full-test. Lấy CLAHE rồi Gaussian trừ Gaussian rồi CLAHE, chênh lệch Macro-F1 trung bình là $+0,17$, $+0,11$ và $+0,15$ điểm phần trăm ở ba mức. Một số checkpoint/noise seed có chênh lệch âm. Đây là ưu thế trung bình nhỏ trong cấu hình cụ thể, không phải kết luận thứ tự sau luôn tốt hơn.
 
-\subsection{Accuracy và Macro-F1 trên cùng tập con}
-\begin{table}[htbp]
-\centering
-\caption{Accuracy trung bình $\pm$ độ lệch chuẩn mẫu (\%) của ResNet-18 trên 430 ảnh.}
-{\fontsize{11.5bp}{13.5bp}\selectfont
-\begin{tabular}{lccc}
-\toprule
-Phương pháp & Tối nhẹ & Tối vừa & Tối nặng \\
-\midrule
-\tableinput{tables/subset_acc}
-\bottomrule
-\end{tabular}}
-\label{tab:acc}
-\end{table}
-
-\begin{table}[htbp]
-\centering
-\caption{Macro-F1 trung bình $\pm$ độ lệch chuẩn mẫu (\%) của ResNet-18 trên 430 ảnh.}
-{\fontsize{11.5bp}{13.5bp}\selectfont
-\begin{tabular}{lccc}
-\toprule
-Phương pháp & Tối nhẹ & Tối vừa & Tối nặng \\
-\midrule
-\tableinput{tables/subset_f1}
-\bottomrule
-\end{tabular}}
-\label{tab:subsetf1}
-\end{table}
-
-Trên ảnh clean, Accuracy đạt $98,53\%\pm0,82$ và Macro-F1 đạt $98,50\%\pm0,83$. Khi giữ nguyên ảnh thiếu sáng, Macro-F1 giảm còn 90,38\%; 75,35\% và 54,81\% tương ứng mức nhẹ, vừa và nặng. Sự suy giảm này cho thấy mô hình đã học tốt trên ảnh gốc vẫn nhạy với thay đổi đầu vào.
-
-Diffusion, được chọn bằng validation, đạt Macro-F1 92,01\%; 82,71\% và 63,72\%. So với Identity, mức tăng lần lượt xấp xỉ 1,63; 7,36 và 8,91 điểm phần trăm. Ở mức vừa, Accuracy tăng từ 73,05\% lên 82,95\%, cho thấy lợi ích không chỉ xuất hiện ở một cách tổng hợp F1.
-
-CLAHE là phương án truyền thống nổi bật: Macro-F1 đạt 91,98\%; 80,14\% và 59,24\%. Riêng mức nhẹ, chênh lệch trung bình giữa CLAHE và diffusion chỉ khoảng 0,03 điểm phần trăm, nhỏ hơn nhiều độ lệch chuẩn giữa các seed. Không nên diễn giải khoảng cách rất nhỏ này thành bằng chứng ưu thế chắc chắn của một phương pháp.
-
-\fig{subset_f1.png}{0.95}{Macro-F1 theo mức suy giảm trên tập con 430 ảnh của notebook ResNet-18. Các đường thể hiện xu hướng của cùng một bộ nhận dạng khi thay đổi phép xử lý đầu vào.}{fig:subsetf1}
-
-\subsection{Đối chiếu trên toàn bộ 12.630 ảnh test}
-\begin{table}[htbp]
-\centering
-\caption{Macro-F1 (\%) của ResNet-18 trên full-test, theo bảng đã công bố trong README. Đây là lần chạy riêng với notebook 430 ảnh.}
-{\fontsize{11.5bp}{13.5bp}\selectfont
-\begin{tabular}{lccc}
-\toprule
-Phương pháp & Tối nhẹ & Tối vừa & Tối nặng \\
-\midrule
-\tableinput{tables/fulltest}
-\bottomrule
-\end{tabular}}
-\label{tab:full}
-\end{table}
-
-Theo README, full-test clean có Accuracy $99,15\%\pm0,30$ và Macro-F1 $98,90\%\pm0,40$. Pipeline diffusion đã chọn bằng validation đạt Macro-F1 93,45\%; 83,87\% và 64,88\% ở ba mức. Mức tăng so với Identity tương ứng là 1,45; 5,83 và 5,18 điểm phần trăm.
-
-CLAHE có Macro-F1 mức nhẹ cao nhất trong bảng full-test (94,35\%). Tuy nhiên, đây là quan sát trên test, không phải căn cứ để thay phương pháp đã chọn trước đó. Ở mức vừa và nặng, diffusion có trung bình cao hơn CLAHE, nhưng kết luận về ý nghĩa thống kê cần phân tích chênh lệch ghép cặp từ dự đoán gốc.
-
-Kết quả full-test củng cố nhận xét rằng thiếu sáng nặng vẫn là trường hợp khó và tăng sáng không phục hồi hoàn toàn hiệu năng clean. Các giá trị khác với bảng tập con là điều bình thường khi phạm vi mẫu và lần chạy thay đổi. Báo cáo sử dụng bảng này để đối chiếu xu hướng, không xem hai bảng là cùng một thí nghiệm.
+Full-test chỉ có Gaussian rồi Gamma, không có Gamma rồi Gaussian; cặp Gamma chỉ được so thứ tự trực tiếp trên validation và subset. Không suy rộng cặp CLAHE sang mọi phép tăng sáng.

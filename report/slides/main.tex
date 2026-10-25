@@ -112,7 +112,7 @@ Ngô Quang Thiện & 24102651 & 24102651@st.phenikaa-uni.edu.vn
 \column{0.47\textwidth}
 \textbf{Khảo sát xử lý ảnh}\par
 Mô phỏng tối và nhiễu ở 3 mức.\par
-So sánh 7 phương pháp tăng cường.\par
+So sánh 7 enhancer, 3 bộ lọc và hai thứ tự.\par
 Đo PSNR, SSIM và hiệu năng nhận dạng.
 \column{0.47\textwidth}
 \textbf{Phạm vi thực nghiệm}\par
@@ -148,7 +148,7 @@ Chia train/validation theo track để hạn chế rò rỉ dữ liệu.\par\vsp
 1.290 ảnh validation chọn tham số.\par
 430 ảnh test, 10 ảnh mỗi lớp.
 \end{columns}
-\note{Khoảng 45 giây. Giải thích track là chuỗi ảnh liên tiếp của cùng một biển. Chia ở cấp track tránh các ảnh gần giống nhau nằm ở cả train và validation. 30 ảnh cách ly không thuộc tập train cuối. Phần lớn phân tích chi tiết dùng 430 ảnh cân bằng lớp, full-test sẽ được đối chiếu riêng. Nguồn: notebooks/GTSRB_LLIE_Complete_Pipeline_Executed.ipynb, cell 5; configs/resnet18.json; src/data.py.}
+\note{Khoảng 45 giây. Giải thích track là chuỗi ảnh liên tiếp của cùng một biển. Chia ở cấp track tránh các ảnh gần giống nhau nằm ở cả train và validation. 30 ảnh cách ly không thuộc tập train cuối. Subset cân bằng có 430 ảnh; full-test 12.630 ảnh đã được kiểm tra dự đoán thô. Nguồn: configs/resnet18.json; src/data.py; report/evidence/final/audit.json.}
 \end{frame}
 
 % 04
@@ -256,7 +256,7 @@ Một ánh xạ chung cho toàn ảnh; vùng nhiễu cũng bị kéo giãn.
 \begin{columns}[T,onlytextwidth]
 \column{0.48\textwidth}
 \textbf{Clip limit}\par
-Khảo sát $\{1,2,4\}$; chọn \alert{2}.\par
+Khảo sát $\{1,2,4\}$; chọn \alert{1}.\par
 Giới hạn histogram, không phải ngưỡng độ sáng của pixel.
 \column{0.48\textwidth}
 \textbf{Lưới trên ảnh $64\times64$}\par
@@ -283,7 +283,7 @@ Xử lý theo ô, giới hạn khuếch đại tương phản.
 \centering\includegraphics[width=12.5cm,height=3.5cm,keepaspectratio]{classical_default.png}\par
 \raggedright
 {\small RGB đổi sang YCrCb, xử lý Y rồi chuyển lại RGB.\par
-Validation chọn CLAHE: \alert{clip limit 2, lưới $4\times4$}.}
+Validation chọn CLAHE: \alert{clip limit 1, lưới $4\times4$}.}
 \captionnote{Hình minh họa dùng tham số mặc định, riêng CLAHE là lưới $8\times8$.}
 \note{Khoảng 60 giây. Histogram rộng hơn chưa chứng minh ảnh tốt hơn. HE có thể kéo giãn vùng sáng mạnh. CLAHE thích ứng theo vùng nhưng ô quá nhỏ trên ảnh 64x64 làm thống kê nhạy hơn với nhiễu. tileGridSize là số ô, không phải kích thước pixel của ô. Cấu hình chọn 4x4 tương ứng ô khoảng 16x16 pixel. Nguồn: src/enhancement.py; https://docs.opencv.org/4.x/d5/daf/tutorial_py_histogram_equalization.html.}
 \end{frame}
@@ -450,182 +450,154 @@ Chọn tham số trên validation trước test.
 
 % 11
 \paperreference{}
-\begin{frame}{5.1. Macro-F1 giảm khi thiếu sáng nặng hơn}\relax
-{\small ResNet-18, tập con 430 ảnh. Giá trị mean $\pm$ SD (\%).}
-\par\vspace{1mm}\par\centering
-\smalltable
-\setlength{\tabcolsep}{10pt}
-\begin{tabular}{lccc}
-\rowcolor{Blue} \color{white}\bfseries Phương pháp & \color{white}\bfseries Tối nhẹ & \color{white}\bfseries Tối vừa & \color{white}\bfseries Tối nặng\\\midrule
-Identity & $90,38\pm2,17$ & $75,35\pm2,55$ & $54,81\pm2,30$\\
-Gamma & $91,85\pm1,61$ & $76,81\pm2,83$ & $55,21\pm3,75$\\
-HE & $90,22\pm2,96$ & $75,25\pm5,53$ & $52,46\pm9,08$\\
-CLAHE & $91,98\pm1,30$ & $80,14\pm1,97$ & $59,24\pm5,37$\\
-MSR & $81,55\pm3,37$ & $50,97\pm4,09$ & $30,37\pm5,08$\\
-Zero-DCE & $88,05\pm3,96$ & $69,30\pm4,22$ & $46,99\pm3,19$\\
-Retinexformer & $79,99\pm4,01$ & $73,63\pm3,74$ & $52,57\pm2,41$\\
-\textbf{Diffusion} & $\mathbf{92,01}\pm2,21$ & $\mathbf{82,71}\pm3,08$ & $\mathbf{63,72}\pm5,07$\\\bottomrule
-\end{tabular}
-\raggedright
-\takeaway{Diffusion tăng khoảng 1,63 / 7,36 / 8,91 điểm phần trăm so với Identity.}
-\captionnote{Clean: Macro-F1 $98,50\%\pm0,83$.}
-\note{Khoảng 60 giây. Không đọc mọi ô. Chỉ ba dòng Identity, CLAHE, diffusion để mô tả xu hướng. Diffusion được chọn từ validation, không chọn sau khi xem bảng này. Mức nhẹ CLAHE và diffusion chỉ cách 0,03 điểm phần trăm, chưa phải bằng chứng ưu thế chắc chắn. Ở mức nặng ngay cả diffusion còn xa clean. Nguồn: data/resnet18_notebook_aggregate.csv, tính lại từ 219 bản ghi notebook.}
+\paperreference{}
+\begin{frame}{5.1. Tăng sáng: full-test 12.630 ảnh}
+\smalltable\begin{tabular}{lccc}\toprule Phương pháp & Nhẹ & Vừa & Nặng\\\midrule
+Identity & 90,45 $\pm$ 3,38 & 76,07 $\pm$ 4,69 & 58,37 $\pm$ 7,77\\
+Gamma & 91,65 $\pm$ 3,45 & 77,50 $\pm$ 5,27 & 59,25 $\pm$ 7,12\\
+HE & 88,87 $\pm$ 3,68 & 73,15 $\pm$ 3,75 & 53,25 $\pm$ 5,88\\
+CLAHE & 92,20 $\pm$ 3,39 & 78,16 $\pm$ 5,33 & 60,47 $\pm$ 8,05\\
+MSR & 84,31 $\pm$ 2,04 & 62,56 $\pm$ 2,26 & 39,62 $\pm$ 2,11\\
+Zero-DCE & 88,08 $\pm$ 4,54 & 72,34 $\pm$ 5,16 & 52,78 $\pm$ 7,01\\
+Retinexformer & 83,92 $\pm$ 1,26 & 74,28 $\pm$ 3,08 & 54,22 $\pm$ 4,91\\
+Diffusion & 93,63 $\pm$ 2,13 & 81,57 $\pm$ 4,98 & 62,46 $\pm$ 5,56\\\bottomrule\end{tabular}
+\captionnote{Macro-F1 (\%), trung bình noise trong checkpoint rồi mean và sample SD qua ba checkpoint.}
+\takeaway{Tăng sáng có ích nhưng thiếu sáng nặng vẫn là trường hợp khó.}
+
 \end{frame}
 
-% 12
 \paperreference{}
-\begin{frame}{5.2. PSNR cao hơn chưa bảo đảm nhận dạng tốt hơn}\relax
-{\small Cùng 430 ảnh ở mức tối vừa, cùng ResNet-18.}
-\par\vspace{3mm}\par
-\centering\renewcommand{\arraystretch}{1.4}
-\begin{tabular}{lrrrr}
-\rowcolor{Blue} \color{white}\bfseries  & \color{white}\bfseries PSNR (dB) & \color{white}\bfseries SSIM & \color{white}\bfseries Accuracy (\%) & \color{white}\bfseries Macro-F1 (\%)\\\midrule
-Identity & 15,37 & 0,3410 & 73,05 & 75,35\\
-Zero-DCE & \textbf{20,08} & 0,4509 & 66,02 & 69,30\\
-CLAHE & 19,29 & \textbf{0,5568} & 78,50 & 80,14\\
-Diffusion & 14,90 & 0,5410 & \textbf{82,95} & \textbf{82,71}\\\bottomrule
-\end{tabular}
-\par\vspace{4mm}\par\raggedright
-PSNR phản ánh sai số cường độ trên toàn ảnh.\par
-ResNet-18 cần các đặc trưng như nét số, đường viền và màu sắc.
-\takeaway{Metric chất lượng ảnh bổ trợ giải thích, không thay thế metric nhận dạng.}
-\captionnote{Giá trị trung bình trên cùng tập con 430 ảnh.}
-\note{Khoảng 60 giây. So Zero-DCE với diffusion: PSNR 20,08 lớn hơn 14,90 nhưng F1 69,30 thấp hơn 82,71. CLAHE có SSIM cao hơn diffusion nhưng F1 thấp hơn. Cơ chế giữ hoặc làm mất chi tiết là cách giải thích hợp lý, cần xem từng ảnh để xác nhận nguyên nhân. Nguồn: notebook và bảng CSV kèm theo.}
+\begin{frame}{5.2. Khử nhiễu và thứ tự: chọn trước khi xem test}
+
+\begin{itemize}
+\item Gaussian, bilateral, NLM: hai độ mạnh mỗi bộ lọc.
+\item Chọn độ mạnh bằng validation, giữ giống nhau cho hai thứ tự.
+\item Kết hợp với Gamma và CLAHE: 12 chuỗi, không train lại CNN.
+\item Subset: 19 phương pháp, 516 lượt trên 430 ảnh.
+\item Full-test: 8 phương pháp được khóa bằng validation, 219 lượt.
+\end{itemize}
+\takeaway{Validation chọn Gaussian $5\times5$, $\sigma=0,8$ rồi Gamma $\alpha=0,8$.}
+\captionnote{Macro-F1 validation 77,77\%; diffusion 72,77\%. Không dùng kết quả subset để sàng lọc full-test.}
+
 \end{frame}
 
-% 13
 \paperreference{}
-\begin{frame}{5.3. Tương quan giữa chất lượng ảnh và Macro-F1}\relax
-\begin{columns}[c,onlytextwidth]
-\column{0.66\textwidth}
-\begin{tikzpicture}
-\begin{axis}[slideplot,width=9.4cm,height=5.4cm,ybar,bar width=14pt,
-  ymin=0,ymax=0.85,ytick={0,0.2,0.4,0.6,0.8},
-  symbolic x coords={Nhẹ,Vừa,Nặng},xtick=data,enlarge x limits=0.25,
-  ylabel={Spearman $\rho$},legend style={at={(0.5,1.06)},anchor=south,legend columns=2}]
-\addplot[fill=Orange,draw=Orange] coordinates {(Nhẹ,0.667) (Vừa,0.333) (Nặng,0.286)};
-\addplot[fill=Teal,draw=Teal] coordinates {(Nhẹ,0.667) (Vừa,0.619) (Nặng,0.619)};
-\legend{PSNR,SSIM}
-\end{axis}
-\end{tikzpicture}
-\column{0.30\textwidth}
-\textbf{8 phương pháp/mức}\par
-Tính cả Identity, loại Clean.\par\vspace{3mm}
-Thứ hạng PSNR ít phù hợp hơn với F1 khi tối nặng.\par\vspace{3mm}
-\alert{Phân tích khám phá:}\par
-Ít điểm và dùng chung tập ảnh.
+\begin{frame}{5.3. Khử nhiễu kết hợp tăng sáng cải thiện nhận dạng}
+\smalltable\begin{tabular}{lccc}\toprule Phương pháp & Nhẹ & Vừa & Nặng\\\midrule
+Identity & 90,45 $\pm$ 3,38 & 76,07 $\pm$ 4,69 & 58,37 $\pm$ 7,77\\
+Diffusion & 93,63 $\pm$ 2,13 & 81,57 $\pm$ 4,98 & 62,46 $\pm$ 5,56\\
+Gaussian & 95,30 $\pm$ 1,93 & 81,85 $\pm$ 2,61 & 68,60 $\pm$ 2,74\\
+Gaussian $\to$ Gamma & 96,70 $\pm$ 1,16 & 85,54 $\pm$ 2,49 & 71,56 $\pm$ 2,01\\
+CLAHE $\to$ Gaussian & 96,57 $\pm$ 1,21 & 85,26 $\pm$ 2,60 & 71,77 $\pm$ 2,30\\\bottomrule\end{tabular}
+\takeaway{Gaussian rồi Gamma tăng 6,25 / 9,47 / 13,19 điểm phần trăm so Identity.}
+\captionnote{Cùng 12.630 ảnh, checkpoint và ảnh tối. Phương pháp được chọn bằng validation, không cần cao nhất ở mọi ô test.}
+
+\end{frame}
+
+\paperreference{}
+\begin{frame}{5.4. PSNR và SSIM không thay thế metric nhận dạng}
+
+\textbf{Cùng full-test mức nặng}\par\vspace{3mm}
+\begin{tabular}{lrrr}\toprule Phương pháp & PSNR (dB) & SSIM & Macro-F1 (\%)\\\midrule
+Gaussian & 13,78 & 0,2847 & 68,60\\
+Diffusion & 14,79 & 0,4768 & 62,46\\\bottomrule
+\end{tabular}
+\par\vspace{4mm}
+Gaussian có cả PSNR/SSIM thấp hơn nhưng F1 cao hơn.\par
+Chỉ số ảnh đo sai khác trên crop; CNN cần chi tiết phân biệt lớp.
+\takeaway{Chọn tiền xử lý bằng validation theo tác vụ nhận dạng.}
+
+\end{frame}
+
+\paperreference{}
+\begin{frame}{5.5. Tương quan chỉ là phân tích khám phá}
+
+\begin{columns}[c,onlytextwidth]\column{0.66\textwidth}
+\begin{tikzpicture}\begin{axis}[slideplot,width=9.4cm,height=5.2cm,ybar,bar width=14pt,
+ymin=0,ymax=.85,symbolic x coords={Nhẹ,Vừa,Nặng},xtick=data,enlarge x limits=.25,
+ylabel={Spearman $\rho$},legend style={at={(.5,1.06)},anchor=south,legend columns=2}]
+\addplot[fill=Orange,draw=Orange] coordinates {(Nhẹ,.667)(Vừa,.357)(Nặng,.286)};
+\addplot[fill=Teal,draw=Teal] coordinates {(Nhẹ,.714)(Vừa,.738)(Nặng,.619)};
+\legend{PSNR,SSIM}\end{axis}\end{tikzpicture}
+\column{.30\textwidth}8 phương pháp/mức.\par
+Cùng full-test 12.630 ảnh.\par\vspace{3mm}
+Ít điểm và dùng chung ảnh/checkpoint.\par
+Không suy ra nhân quả.
 \end{columns}
-\captionnote{Pearson cũng dương ở cả ba mức.}
-\note{Khoảng 55 giây. Spearman so thứ hạng giữa phương pháp theo chất lượng và theo F1. Pearson đo liên hệ tuyến tính, với PSNR/F1 là 0,715; 0,660; 0,686 và SSIM/F1 là 0,741; 0,755; 0,691. Không nói tương quan là quan hệ nhân quả. Tám phương pháp cùng dữ liệu nên không độc lập; MSR thấp ở cả hai trục có thể ảnh hưởng Pearson. Nguồn: data/resnet18_correlations.csv.}
+\captionnote{Thống kê cho nhóm tăng sáng/Identity; không trộn subset với full-test.}
+
 \end{frame}
 
-% 14
 \paperreference{}
-\begin{frame}{5.4. Nhiễu làm thay đổi thứ hạng phương pháp}\relax
-\begin{columns}[c,onlytextwidth]
-\column{0.68\textwidth}
-\begin{tikzpicture}
-\begin{axis}[slideplot,width=9.3cm,height=5.3cm,
-  xmin=0,xmax=3,xtick={0,1,2,3},xticklabels={Chỉ Gamma,+ Gaussian,+ Poisson,+ Cả hai},
-  ymin=40,ymax=103,ylabel={Macro-F1 (\%)},
-  legend style={at={(0.5,1.03)},anchor=south,legend columns=3}]
-\addplot[color=Orange,mark=triangle*] coordinates {(0,98.20)(1,73.33)(2,50.35)(3,50.97)};
-\addplot[color=Teal,mark=*] coordinates {(0,95.04)(1,90.69)(2,85.38)(3,82.71)};
-\addplot[color=Navy,mark=square*] coordinates {(0,93.30)(1,88.20)(2,82.43)(3,80.14)};
-\legend{MSR,Diffusion,CLAHE}
-\end{axis}
-\end{tikzpicture}
-\column{0.28\textwidth}
-Giữ $\gamma_d=2,2$.\par
-Giữ tham số enhancer và checkpoint.\par\vspace{3mm}
-\textbf{MSR:}\par
-98,20\% còn 50,97\%.\par
-Giảm \alert{47,23 điểm phần trăm} khi thêm cả hai nhiễu.
-\end{columns}
-\captionnote{Ablation trên 430 ảnh, 288 lượt.}
-\note{Khoảng 60 giây. MSR không luôn kém: tốt nhất khi chỉ có Gamma trong bảng đầy đủ. Thêm nhiễu làm MSR suy giảm mạnh, phù hợp cơ chế log nhạy ở vùng tối. Trong cấu hình này Poisson ảnh hưởng mạnh hơn Gaussian, nhưng hai mức nhiễu không cân bằng năng lượng nên không suy rộng cho mọi trường hợp. Ba đường là các phương pháp đại diện, không phải toàn bộ tám phương pháp.}
+\begin{frame}{5.6. Ablation: cần xét cả nhiễu khi tăng sáng}
+
+\centering\includegraphics[width=.86\linewidth,height=5cm,keepaspectratio]{ablation.pdf}
+\captionnote{430 ảnh, 288 lượt; giữ $\gamma_d=2,2$, checkpoint và tham số enhancer. Hai loại nhiễu chưa cân bằng năng lượng.}
+
 \end{frame}
 
-% 15
 \paperreference{}
-\begin{frame}{5.5. Đối chiếu trên 12.630 ảnh test}\relax
-{\small Thí nghiệm full-test ResNet-18, tách riêng thí nghiệm trên 430 ảnh.}
-\par\vspace{4mm}\par\centering
-\renewcommand{\arraystretch}{1.55}
-\begin{tabular}{lccc}
-\rowcolor{Blue} \color{white}\bfseries Macro-F1 (\%) & \color{white}\bfseries Tối nhẹ & \color{white}\bfseries Tối vừa & \color{white}\bfseries Tối nặng\\\midrule
-Identity & $92,00\pm1,71$ & $78,04\pm1,79$ & $59,70\pm1,64$\\
-CLAHE & $94,35\pm1,12$ & $82,80\pm1,46$ & $64,31\pm3,47$\\
-Diffusion & $93,45\pm1,80$ & $83,87\pm2,97$ & $64,88\pm3,84$\\\bottomrule
-\end{tabular}
-\par\vspace{4mm}\par\raggedright
-Diffusion tăng \alert{1,45 / 5,83 / 5,18} điểm phần trăm so với Identity.\par
-CLAHE có F1 cao hơn ở mức nhẹ.\par
-Không dùng quan sát test để đổi lựa chọn validation.
-\captionnote{Full-test là lần chạy riêng; chưa đối chiếu lại dự đoán từng ảnh trong bản báo cáo này.}
-\note{Khoảng 45 giây. Nói rõ đây là số liệu dự án công bố trong README, không phải lấy chất lượng ảnh subset ghép với F1 full-test. Chỉ trình bày ba phương án để đối chiếu xu hướng. Bảng đủ tám phương pháp có trong báo cáo. Chưa kiểm tra lại dự đoán từng ảnh full-test ở máy này. Nguồn: data/resnet18_fulltest_readme.csv, README.md.}
+\begin{frame}{5.7. Thứ tự không có quy tắc tốt nhất cho mọi bộ lọc}
+
+\textbf{Cặp Gaussian--CLAHE, full-test}\par
+Giữ cùng kernel, sigma, clip limit và tile grid.\par\vspace{3mm}
+CLAHE rồi Gaussian trừ Gaussian rồi CLAHE:\par
+$\Delta$ Macro-F1 trung bình: $+0,17$ / $+0,11$ / $+0,15$ điểm phần trăm.\par\vspace{3mm}
+Một số checkpoint/noise seed có chiều ngược lại.\par
+Gaussian--Gamma chỉ so cả hai thứ tự trên validation và subset.
+\takeaway{Khoảng cách nhỏ chưa chứng minh ưu thế thống kê.}
+
 \end{frame}
 
-% 16
 \paperreference{}
-\begin{frame}{5.6. Hiệu năng nhận dạng và chi phí xử lý}\relax
-\begin{columns}[c,onlytextwidth]
-\column{0.54\textwidth}
-\renewcommand{\arraystretch}{1.65}
-\begin{tabular}{lrr}
-\rowcolor{Blue} \color{white}\bfseries  & \color{white}\bfseries Macro-F1 & \color{white}\bfseries ms/ảnh\\\midrule
-Gamma & 76,81\% & 0,219\\
-CLAHE & 80,14\% & 0,400\\
-Diffusion & 82,71\% & 222,658\\\bottomrule
-\end{tabular}
-\column{0.41\textwidth}
-\textbf{Diffusion}\par
-Ưu tiên Macro-F1 theo validation.\par\vspace{4mm}
-\textbf{CLAHE}\par
-Ứng viên khi cần xử lý nhẹ.\par
-Khoảng cách F1 mức vừa là 2,57 điểm phần trăm.
-\end{columns}
-\par\vspace{5mm}
-\alert{Thời gian enhancer, chưa phải độ trễ toàn hệ thống.}\par
-{\small Mô hình sâu dùng Tesla T4, các phép truyền thống chạy CPU.}
-\captionnote{Mức tối vừa, tập con 430 ảnh.}
-\note{Khoảng 45 giây. Độ trễ chỉ bao gồm khối tăng cường theo cách đo dự án, không bao gồm detector, I/O và toàn bộ classifier. Không chuyển ms/ảnh thành khẳng định FPS thực tế của hệ thống. Nếu mục tiêu ràng buộc thời gian thay đổi, cần lựa chọn lại trên validation theo mục tiêu đó.}
+\begin{frame}{5.8. Phân tích cả mẫu được giúp và bị làm sai}
+
+\textbf{Gaussian rồi Gamma, mức vừa, full-test}\par\vspace{3mm}
+Sửa đúng trung bình: \alert{1.472,67 ảnh/lượt}.\par
+Làm sai trung bình: \alert{29,22 ảnh/lượt}.\par
+Tăng ròng: 1.443,44 ảnh, tương ứng 11,43 điểm phần trăm Accuracy.\par\vspace{4mm}
+$\Delta\mathrm{Accuracy}=100(H-D)/12.630$.\par
+Không dùng $H-D$ thay cho chênh lệch Macro-F1.
+\captionnote{Trung bình qua noise seed và checkpoint; không coi các seed là ảnh nguồn độc lập.}
+
 \end{frame}
 
-% 17
 \paperreference{}
-\begin{frame}{6.1. Quy trình tiền xử lý đề xuất}\relax
+\begin{frame}{5.9. Macro-F1 tốt hơn vẫn còn lớp khó}
+
+\centering\includegraphics[width=.95\linewidth,height=5cm,keepaspectratio]{per_class_severe.png}
+\captionnote{F1 từng lớp full-test mức nặng. Dự đoán và ma trận được kiểm chứng; dữ liệu vẫn là suy giảm mô phỏng.}
+
+\end{frame}
+
+\paperreference{}
+\begin{frame}{6.1. Quy trình tiền xử lý được chọn}
+
 \begin{enumerate}
-\setlength{\itemsep}{3mm}
-\item Cắt ROI, thêm lề 5\%, chuẩn hóa RGB $64\times64$ về $[0,1]$.
-\item Tăng cường bằng diffusion với tham số đã khóa trên validation.
-\item Kiểm tra đầu ra, resize $224\times224$, normalize ImageNet một lần.
-\item Phân loại bằng cùng checkpoint ResNet-18.
+\item Crop ROI + lề 5\%, RGB $64\times64$, chia 255.
+\item Gaussian $5\times5$, $\sigma=0,8$, biên phản xạ.
+\item Gamma $\alpha=0,8$ trên float32, không lượng tử hóa 8 bit.
+\item Resize $224\times224$, normalize ImageNet một lần.
+\item Cùng ResNet-18 cố định, 43 lớp.
 \end{enumerate}
-\par\vspace{3mm}
-\textbf{Phương án xử lý nhẹ:} CLAHE, clip limit 2, lưới $4\times4$.\par
-\textbf{Ảnh thiếu sáng thực:} bỏ bước mô phỏng suy giảm.
-\takeaway{“Tối ưu” trong tập phương án và giao thức đã khảo sát.}
-\note{Khoảng 50 giây. Trong thí nghiệm tạo ảnh tối trước enhancer; trong triển khai ảnh đã tối thì không làm tối thêm. Diffusion là lựa chọn đã xác định bằng validation. Không tự chuyển giữa CLAHE và diffusion theo nhãn mild/medium/severe vì nhãn này không biết sẵn ở triển khai. Một bộ chọn thích nghi cần được nghiên cứu riêng. Nguồn: src/experiment.py, cấu hình và báo cáo mục 6.}
+\takeaway{Ảnh thiếu sáng thực đi trực tiếp vào xử lý, không làm tối thêm.}
+\captionnote{Độ trễ khối Gaussian--Gamma khoảng 0,293 ms/ảnh; chưa phải tốc độ toàn hệ thống. Đối chứng dùng lại từ phiên khác.}
+
 \end{frame}
 
-% 18
 \paperreference{}
-\begin{frame}{6.2. Kết luận và hướng phát triển}\relax
-\textbf{Kết quả chính}\par
-Tăng cường ảnh có thể cải thiện nhận dạng trên cùng ResNet-18.\par
-PSNR/SSIM cao không bảo đảm Accuracy/F1 cao hơn.\par
-Nhiễu ảnh hưởng mạnh đến hiệu quả của các phép tăng sáng.
-\par\vspace{3mm}
-\textbf{Lựa chọn trong khảo sát}\par
-Diffusion ưu tiên Macro-F1, CLAHE phù hợp khảo sát xử lý nhẹ.
-\par\vspace{3mm}
-\textbf{Giới hạn và bước tiếp theo}\par
-Hiện dùng crop và nhiễu tổng hợp.\par
-Cần thử ảnh đêm thực và khảo sát khử nhiễu kết hợp tăng sáng.
-\par\vspace{3mm}
-{\color{Teal}\large\bfseries Cảm ơn thầy cô và các bạn!}
-\note{Khoảng 40 giây. Kết lại theo đúng câu hỏi mở đầu. Không tuyên bố tăng sáng giải quyết hoàn toàn điều kiện tối nặng. Khi hỏi về mở rộng, đề xuất kiểm tra dữ liệu đêm thực, giữ rõ nhãn và cách đánh giá, thêm khử nhiễu nhưng phải kiểm tra mất nét số. Các kết quả chi tiết, tài liệu thuật toán và giới hạn có trong báo cáo.}
-\end{frame}
-\end{document}
+\begin{frame}{6.2. Kết luận và giới hạn}
 
+\textbf{Ba kết luận}\par
+Khử nhiễu kết hợp tăng sáng cải thiện F1 trong giao thức đã xét.\par
+PSNR/SSIM không bảo đảm giữ đặc trưng phân lớp.\par
+Thứ tự phụ thuộc phép xử lý và cấu hình.\par\vspace{3mm}
+\textbf{Giới hạn}\par
+ROI có sẵn, nhiễu RGB tổng hợp, một kiến trúc CNN.\par
+Chưa đánh giá camera đêm thực, detector hoặc video.\par
+Chưa kết luận ý nghĩa thống kê cho các khoảng cách nhỏ.
+\par\vspace{3mm}{\color{Teal}\large\bfseries Cảm ơn thầy cô và các bạn!}
+
+\end{frame}
+
+\end{document}

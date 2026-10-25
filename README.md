@@ -37,35 +37,69 @@ Mỗi phương pháp nhận cùng ảnh tối theo ID, mức và noise seed (101
 
 ## Kết quả chính
 
-Trên full-test **12.630 ảnh**, ResNet-18 đạt Accuracy **99,15% ± 0,30** và Macro-F1 **98,90% ± 0,40** với ảnh gốc. Bảng dưới là Macro-F1 (%) cho đối chứng, CLAHE và pipeline diffusion đã chọn trên validation:
+Trên **12.630 ảnh full-test**, ResNet-18 đạt Accuracy **99,22% ± 0,28** và Macro-F1 **98,94% ± 0,32** với ảnh gốc. Sau khảo sát tăng sáng, khử nhiễu và hai thứ tự kết hợp, validation chọn **Gaussian 5×5, sigma 0,8 rồi Gamma 0,8**. Macro-F1 (%) của các phương án đại diện:
 
 | Phương pháp | Tối nhẹ | Tối vừa | Tối nặng |
 |---|---:|---:|---:|
-| Identity | 92,00 ± 1,71 | 78,04 ± 1,79 | 59,70 ± 1,64 |
-| CLAHE | 94,35 ± 1,12 | 82,80 ± 1,46 | 64,31 ± 3,47 |
-| Diffusion | 93,45 ± 1,80 | 83,87 ± 2,97 | 64,88 ± 3,84 |
+| Identity | 90,45 ± 3,38 | 76,07 ± 4,69 | 58,37 ± 7,77 |
+| Diffusion | 93,63 ± 2,13 | 81,57 ± 4,98 | 62,46 ± 5,56 |
+| Gaussian | 95,30 ± 1,93 | 81,85 ± 2,61 | 68,60 ± 2,74 |
+| Gaussian rồi Gamma | 96,70 ± 1,16 | 85,54 ± 2,49 | 71,56 ± 2,01 |
+| CLAHE rồi Gaussian | 96,57 ± 1,21 | 85,26 ± 2,60 | 71,77 ± 2,30 |
 
-Diffusion tăng Macro-F1 so với identity **1,45 / 5,83 / 5,18 điểm phần trăm** ở ba mức. CLAHE có chi phí thấp hơn: khoảng 0,4 ms/ảnh so với 226–230 ms/ảnh của diffusion trên Tesla T4, chỉ tính thời gian enhancer. Pipeline đã chọn chưa đạt mục tiêu cả Accuracy, Macro-F1 và Weighted-F1 trên 90% ở mức vừa/nặng; chất lượng pixel cao hơn cũng không bảo đảm nhận diện tốt hơn.
+Chuỗi được chọn tăng **6,25 / 9,47 / 13,19 điểm phần trăm** so Identity. Không chọn lại theo ô test tốt nhất. Gaussian đơn lẻ ở mức nặng có PSNR/SSIM thấp hơn diffusion nhưng F1 cao hơn; chỉ số chất lượng ảnh không thay thế metric nhận dạng. Kết luận giới hạn ở ROI và thiếu sáng mô phỏng.
 
-Bảng đầy đủ nằm trong [CSV full-test](report/evidence/resnet18_fulltest_readme.csv); phân tích subset, ablation và giới hạn thí nghiệm nằm trong báo cáo.
+Số liệu, tương quan và biên bản kiểm tra ở [evidence/final](report/evidence/final/); báo cáo trình bày đầy đủ 8 phương pháp tăng sáng/đối chứng, 15 cấu hình khử nhiễu/kết hợp và giới hạn suy luận.
 
-## Mã nguồn và tài liệu
+## Chạy thí nghiệm
+
+Dùng một [notebook chính](notebooks/gtsrb-low-light-enhancement-for-traffic-signs.ipynb); [bản public Kaggle](https://www.kaggle.com/code/kieuthithutrang/gtsrb-low-light-enhancement-for-traffic-signs) phiên 2 đã hoàn tất phần mở rộng (khoảng 1 giờ 33 phút). Notebook dùng trực tiếp ZIP Output phiên 1, giữ ba checkpoint và kết quả baseline đã kiểm chứng; không tạo Dataset trung gian. Lỗi chuyển file lúc xuất ZIP đã được sửa. Notebook tải GTSRB từ tác giả; nguồn, commit và SHA-256 của ba enhancer được khóa trong [public_sources.json](configs/public_sources.json). Giữ giấy phép và ghi công của từng nguồn.
+
+Notebook chứa sẵn 22 tệp mã nguồn/cấu hình và tự tạo chúng trong thư mục tạm khi chạy; không cần chạy notebook khác. Bản notebook đã chạy trước đây được giữ riêng trong `tmp/archived-notebooks/` để đối chiếu local, không đưa lên GitHub.
+
+1. Bật GPU và Internet. Chạy cell thiết lập để bổ sung thư viện thiếu, giữ PyTorch/CUDA có sẵn. `requirements.txt` chứa phiên bản từ môi trường Python 3.14/macOS arm64 cũ, chưa kiểm tra lại trên Windows.
+2. Chọn `TRAIN_MODE='reuse'`: notebook tự tải ZIP Output từ phiên `v1` của chính notebook qua API công khai, không tạo Dataset và không cần key. Có thể điền `CHECKPOINT_ARCHIVE` nếu ZIP đã có trong phiên. Kiểm tra checksum gói gốc, nội dung sau chuẩn hóa, seed, manifest và cấu hình; không khớp thì dừng, không tự train. Chọn `fresh` nếu muốn huấn luyện lại toàn bộ.
+3. Chạy lần lượt kiểm tra enhancer → chuẩn bị dữ liệu → khôi phục/train CNN → chọn trên validation → subset → full-test → mở rộng → xuất ZIP. Dự đoán cũ chỉ dùng lại khi khớp mã, dữ liệu, cấu hình và checkpoint; nếu selection cũ không còn khớp thì chọn lại trên validation bằng CNN đã có.
+
+Phần mở rộng bổ sung Gaussian, bilateral, NLM và hai thứ tự kết hợp với Gamma/CLAHE. Chọn độ mạnh bộ lọc trên validation rồi giữ giống nhau cho hai thứ tự; khóa phương pháp full-test trước khi đọc kết quả subset. Cấu hình nằm trong [processing_extension.json](configs/processing_extension.json). `RUN_EXTENSION_FULL_TEST=False` chỉ chạy subset mở rộng; không được gọi là full-test. Giữ nguyên CNN, mức suy giảm và seed.
+
+Output chính là `gtsrb-notebook-results.zip`: mở `READ_ME_FIRST.md`, xem bảng tổng hợp, dự đoán CSV, ma trận NPZ và `SHA256.json`; phần mở rộng ở `08_processing_extension/`. ZIP không kèm ảnh nguồn, cache hoặc weights enhancer. Notebook xuất bản sao checkpoint và kết quả theo từng giai đoạn; tải chúng trước khi kết thúc phiên. Thời gian đối chứng dùng lại từ phiên khác chỉ mang tính mô tả.
+
+## Phân tích và tái lập
+
+Đã kiểm tra SHA từng file, độ phủ mẫu/nhãn/seed, tính lại Accuracy/Macro-F1/Weighted-F1 cho **5.847.990 dòng dự đoán** ở bốn phạm vi baseline/mở rộng × subset/full-test. Con số bao gồm đối chứng dùng lại, không phải số ảnh độc lập. Confusion matrix khớp ở 954 lượt có ma trận lưu trong ZIP; subset baseline được tính lại từ CSV. Ba checkpoint nhất quán giữa các phạm vi. Biên bản hiện tại ở [final/audit.json](report/evidence/final/audit.json). Chưa đánh giá ảnh đêm thực.
+
+
+Từ thư mục gốc, có thể sinh lại notebook, xem lệnh thí nghiệm hoặc phân tích kết quả đã giải nén:
+
+```powershell
+python -m src.tools.build_kaggle_notebook
+python -m src.tools.research --help
+python -m src.tools.research errors --input outputs/recovered/notebook_A/test_subset --output outputs/recovered/notebook_A/test_subset/error_analysis_new
+python -m src.tools.result_archive --help
+python -m src.tools.verified_results --archive outputs/kaggle-results/gtsrb-notebook-results.zip --output outputs/verified-report --require-extension
+```
+
+Phân tích yêu cầu `protocol.json`, `runs.json`, `summary.csv`, `predictions/` và thư mục đầu ra mới; kiểm tra độ phủ/nhãn/metric trước khi xuất F1 từng lớp, confusion matrix và chuyển đúng/sai. Không cần train lại để phân tích CSV đã lưu. `order_comparisons.csv` của phần mở rộng ghi chênh lệch hai thứ tự: `post_minus_pre` dương nghĩa là tăng sáng rồi khử nhiễu có chỉ số cao hơn.
+
+Khảo sát ảnh đêm thực dùng lệnh `python -m src.tools.real_lowlight --help`. Khi có ảnh, tạo `data/real_lowlight/manifest.csv` với dòng tiêu đề dưới đây rồi điền một dòng cho mỗi mẫu; hiện chưa có dữ liệu hoặc kết quả thực.
+
+```csv
+sample_id,image_path,class_id,group_id,x1,y1,x2,y2,source_url,license,annotator,capture_kind
+```
+
+Truyền đường dẫn đó qua `--manifest`, đặt `--image-root` là thư mục ảnh nguồn; `image_path` trong CSV tính từ thư mục này. Chỉ dùng ảnh chụp thật, nhãn GTSRB do người xác minh, có nguồn/quyền sử dụng; tọa độ ROI là xyxy với biên cuối exclusive, chưa padding, `group_id` chung cho cùng biển/chuỗi và `capture_kind=real_lowlight`. Không có ảnh tham chiếu ghép cặp thì không tính PSNR/SSIM; báo số lớp quan sát khi đọc F1.
+
+## Mã nguồn và báo cáo
 
 | Đường dẫn | Nội dung |
 |---|---|
-| [src/](src/) | Chuẩn bị dữ liệu, mô phỏng suy giảm, enhancer, training, metric và tổng hợp kết quả |
-| [configs/resnet18.json](configs/resnet18.json) | Cấu hình thí nghiệm chính |
-| [Notebook đã thực thi](notebooks/GTSRB_LLIE_Complete_Pipeline_Executed.ipynb) | Pipeline và kết quả subset/ablation có output |
-| [Báo cáo PDF](report/bao_cao.pdf) | Nội dung và phân tích đầy đủ |
-| [report/](report/README.md) | Báo cáo, slide PDF, số liệu và hướng dẫn biên dịch local |
-| [Slide PDF](report/thuyet_trinh.pdf) | Tài liệu thuyết trình |
+| [src/](src/) | Xử lý ảnh, dữ liệu, CNN và metric; lệnh chạy/đóng gói ở [src/tools/](src/tools/) |
+| [configs/](configs/) | Cấu hình thí nghiệm và nguồn enhancer |
+| [tests/](tests/) | Kiểm tra pipeline và tính toàn vẹn kết quả |
+| [Notebook chính](notebooks/gtsrb-low-light-enhancement-for-traffic-signs.ipynb) | Toàn bộ quy trình Kaggle, chế độ fresh/reuse |
+| [Báo cáo](report/bao_cao.pdf) · [Slide](report/thuyet_trinh.pdf) | PDF cuối; mã LaTeX, hình và bảng nguồn trong [report/](report/README.md) |
 
-Cài các thư viện để làm việc với mã nguồn:
+Biên dịch PDF bằng `powershell -File report/latex/build.ps1`; tạo lại hình/bảng từ ZIP đã kiểm chứng theo [hướng dẫn báo cáo](report/README.md). Hướng dẫn font và compiler nằm trong [report/README.md](report/README.md).
 
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-python -m pip install -r requirements.txt
-```
-
-Dataset, checkpoint, mã/weights bên ngoài và artifacts trong `data/`, `external/`, `outputs/` được lưu riêng, không có sẵn khi clone. `scripts/`, `checks/`, `PROJECT_GUIDE.md` và `DATASETS.md` chỉ giữ ở local. Notebook đã thực thi dùng để xem quy trình và kết quả; chạy lại toàn bộ cần bổ sung dữ liệu, weights và các công cụ local tương ứng. Khi chạy trên Kaggle, dùng bộ PyTorch/CUDA phù hợp môi trường thay vì cài đè bộ thư viện macOS trong lockfile.
+Dữ liệu, checkpoint, weights bên ngoài, kết quả thô, cache và bản nháp lưu local ở `data/`, `external/`, `outputs/`, `tmp/`; Git giữ mã, cấu hình, notebook và bằng chứng gọn. Lockfile macOS cũ cũng chỉ lưu local.

@@ -1,18 +1,64 @@
-.venv
+# Python environments and caches
+.venv/
+venv/
 __pycache__/
-*.pyc
-data
-outputs/
-external
-.DS_Store
-BASELINE_RESEARCH.md
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.ipynb_checkpoints/
 
-# Local tools and detailed project notes
+# Research inputs, model weights and generated results (download separately)
+/data/
+/external/
+/outputs/
+/tmp/
+/environments/
+*.pt
+*.pth
+*.pth.tar
+*.ckpt
+*.safetensors
+*.zip
+
+# Report QA, draft renders and LaTeX build products
+/report/_qa/
+/report/latex/_build/
+/report/slides/_build/
+/report/report_mau.pdf
+*.aux
+*.log
+*.out
+*.toc
+*.lof
+*.lot
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.nav
+*.snm
+*.vrb
+*.xdv
+# Keep final report PDFs, required figures, source .tex and evidence CSV/JSON.
+
+# Credentials, editor settings and machine-specific notes
+.env
+.env.*
+!.env.example
+kaggle*.json
+!/report/evidence/kaggle_fulltest_audit.json
+!/report/evidence/kaggle_run_diagnosis.json
+!/report/evidence/kaggle_public_run.json
+.DS_Store
+Thumbs.db
+/.vscode/
+/.idea/
 /scripts/
 /checks/
 /PROJECT_GUIDE.md
 /DATASETS.md
+/BASELINE_RESEARCH.md
 /.claude/
 
-/report/report_mau.pdf
-
+# Personal presentation notes (local only)
+/report/loi_dan.md

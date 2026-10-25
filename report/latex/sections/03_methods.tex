@@ -62,10 +62,10 @@ Hai tham số chính là \texttt{clipLimit} và \texttt{tileGridSize}. Tham số
 
 Ở ô quá nhỏ, số mẫu dùng để ước lượng histogram ít, dễ khiến thống kê bị ảnh hưởng bởi nhiễu và từng nét của biển báo. Lưới thưa hơn có thể ổn định hơn nhưng mức thích ứng không gian cũng giảm. Do vậy, cấu hình tốt trên ảnh độ phân giải cao chưa chắc tốt khi chuyển sang crop $64\times64$.
 
-Lưới validation khảo sát ba giá trị clip limit $\{1,2,4\}$ kết hợp hai lưới $\{4\times4,8\times8\}$. Notebook chọn clip limit bằng 2 và lưới $4\times4$. Đây là kết quả lựa chọn bằng khả năng nhận dạng trên validation, không phải tham số được chọn bằng cách nhìn ảnh test.
+Lưới validation khảo sát ba giá trị clip limit $\{1,2,4\}$ kết hợp hai lưới $\{4\times4,8\times8\}$. Notebook chọn clip limit bằng 1 và lưới $4\times4$. Đây là kết quả lựa chọn bằng khả năng nhận dạng trên validation, không phải tham số được chọn bằng cách nhìn ảnh test.
 
 \fig{parameters.png}{0.88}{Ảnh hưởng của Gamma và clip limit trên cùng ảnh tối mức vừa. Hàng dưới giữ lưới CLAHE $8\times8$ để minh họa riêng tham số clip limit; đây không phải cấu hình CLAHE được chọn cuối cùng.}{fig:parameters}
-Một điểm đáng chú ý là ba clip limit 1, 2 và 4 với lưới $8\times8$ cho cùng điểm validation trong notebook. Với ô $8\times8$ có 64 pixel và 256 bin, việc quy đổi ngưỡng cắt về số nguyên trong OpenCV có thể đưa các giá trị này về cùng ngưỡng hiệu dụng. Vì vậy, đổi tham số danh nghĩa chưa chắc tạo ra đầu ra khác trên ảnh nhỏ. Nhận định này phù hợp với cài đặt thư viện và quan sát thí nghiệm, không nên suy rộng thành tính chất chung cho mọi kích thước ảnh.
+Với ô nhỏ, các giá trị clip limit danh nghĩa khác nhau có thể tạo cùng ngưỡng hiệu dụng. Với ô $8\times8$ có 64 pixel và 256 bin, việc quy đổi ngưỡng cắt về số nguyên trong OpenCV có thể đưa các giá trị này về cùng ngưỡng hiệu dụng. Vì vậy, đổi tham số danh nghĩa chưa chắc tạo ra đầu ra khác trên ảnh nhỏ. Nhận định này phù hợp với cài đặt thư viện và quan sát thí nghiệm, không nên suy rộng thành tính chất chung cho mọi kích thước ảnh.
 
 \textbf{Ưu điểm:} tăng tương phản theo vùng, kiểm soát tốt hơn sự khuếch đại histogram và có chi phí tính toán thấp hơn nhiều so với các bộ phục hồi sâu. \textbf{Hạn chế:} vẫn có thể làm nhiễu rõ hơn; chất lượng phụ thuộc tương tác giữa clip limit, lưới và độ phân giải.
 
@@ -123,7 +123,7 @@ Ba mô hình sâu đều được dùng nguyên trọng số tác giả. Vì d�
 \fig{classical_default.png}{1}{Ảnh và histogram sau các phép xử lý truyền thống với tham số mặc định: Gamma 0,6; CLAHE clip limit 2, lưới $8\times8$; MSR $[3,10,20]$. Hình dùng để giải thích cơ chế, không phải kết quả của bộ tham số đã chọn.}{fig:classical}
 Hình~\ref{fig:classical} cho thấy cùng một ảnh tối có thể được biến đổi thành nhiều phân bố sáng khác nhau. Gamma nâng phần lớn pixel tối; HE phân phối lại mức sáng trên toàn ảnh; CLAHE phụ thuộc từng vùng; MSR có thể tạo thay đổi mạnh về màu và độ tương phản. Việc histogram trải rộng sau xử lý chỉ chứng minh phép ánh xạ đã thay đổi phân bố, chưa chứng minh nội dung có ích đã được phục hồi.
 
-\fig{enhancers_selected.png}{0.82}{Cùng ảnh validation mức vừa qua bảy phương pháp với tham số đã chọn trên validation. Clean là ảnh tham chiếu, Identity là ảnh tối. Các kết quả được trích từ notebook ResNet-18.}{fig:all}
+\fig{enhancers_selected.png}{0.82}{Minh họa bảy phương pháp trên một crop: Gamma 0,8; CLAHE clip 2, lưới $4\times4$; MSR $[5,15,30]$. Clean là tham chiếu, Identity là ảnh tối. Hình giải thích biến đổi ảnh, không phải bằng chứng phân loại của bộ tham số cuối.}{fig:all}
 Trong Hình~\ref{fig:all}, ảnh Zero-DCE và Retinexformer sáng lên rõ, nhưng nhiễu và sự biến đổi màu cũng cần được quan sát. MSR làm nền thay đổi mạnh, còn diffusion không nhất thiết tạo ảnh sáng nhất. Những nhận xét này chỉ có giá trị minh họa trên một mẫu; xếp hạng thuật toán phải dựa trên số liệu tổng hợp và hiệu quả nhận dạng ở các phần tiếp theo.
 
 \subsection{Đánh giá chất lượng bằng PSNR và SSIM}

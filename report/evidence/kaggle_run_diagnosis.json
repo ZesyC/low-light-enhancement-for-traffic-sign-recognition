@@ -1,0 +1,79 @@
+{
+  "date": "2026-10-25",
+  "kaggle_status": "ERROR",
+  "failure_type": "EXDEV",
+  "failure_operation": "Path.replace from /tmp/gtsrb-clean/subset-tables.zip to /kaggle/working/gtsrb-subset-results.zip",
+  "fulltest_stage_completed_at_s": 29070.63,
+  "stage_seconds": {
+    "training": 4200.650000000001,
+    "validation": 4234.81,
+    "subset": 675.289999999999,
+    "ablation": 1502.8200000000015,
+    "fulltest": 18171.21
+  },
+  "fulltest_group_wall_seconds": {
+    "clean": {
+      "groups": 1,
+      "sum": 101.45,
+      "mean": 101.45
+    },
+    "diffusion": {
+      "groups": 9,
+      "sum": 26677.64,
+      "mean": 2964.18
+    },
+    "gamma": {
+      "groups": 9,
+      "sum": 932.41,
+      "mean": 103.6
+    },
+    "identity": {
+      "groups": 9,
+      "sum": 920.44,
+      "mean": 102.27
+    },
+    "clahe": {
+      "groups": 9,
+      "sum": 1185.12,
+      "mean": 131.68
+    },
+    "he": {
+      "groups": 9,
+      "sum": 924.34,
+      "mean": 102.7
+    },
+    "retinex": {
+      "groups": 9,
+      "sum": 1155.85,
+      "mean": 128.43
+    },
+    "zero_dce": {
+      "groups": 9,
+      "sum": 1159.6,
+      "mean": 128.84
+    },
+    "retinexformer": {
+      "groups": 9,
+      "sum": 2397.3,
+      "mean": 266.37
+    }
+  },
+  "diffusion_fraction_of_summed_worker_group_wall_time": 0.752454649173651,
+  "timing_limit": "Group intervals include enhancement, classification, metrics, I/O, hash checks and orchestration; they are not GPU kernel timings.",
+  "io_findings": [
+    "One .npy per enhanced image",
+    "Three classifier passes reload outputs",
+    "Cache SHA256 verification repeats on two later passes"
+  ],
+  "fix": "Build temporary export ZIP files in destination PUBLIC directory before atomic replacement.",
+  "regression_tests_passed": 23,
+  "remote_notebook_modified": false,
+  "downloaded_archives": [
+    "outputs\\kaggle-20261025\\gtsrb-notebook-results.zip",
+    "outputs\\kaggle-20261025\\gtsrb-subset-results.zip"
+  ],
+  "recovered_fulltest_audit": "report/evidence/kaggle_fulltest_audit.json",
+  "recovered_fulltest_predictions_verified": 2765970,
+  "checkpoint_recovered": true,
+  "recovered_unique_archive": "outputs/kaggle-20261025/gtsrb-notebook-results-verified.zip"
+}

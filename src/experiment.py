@@ -3,6 +3,7 @@ from copy import deepcopy
 import json
 from pathlib import Path
 import time
+import shutil
 
 import numpy as np
 import torch
@@ -18,6 +19,23 @@ from .model import make_cnn, image_tensor, cnn_config
 
 def source_code_hash():
     return config_id({p.name: digest(p) for p in sorted(Path(__file__).parent.glob('*.py'))})
+
+
+def release_image_cache(root, cached):
+    """Remove only a completed, generated cache directory after every CNN used it."""
+    if not cached:
+        return
+    base = (Path(root) / 'data/cache').resolve()
+    folders = {(Path(root) / r['path']).resolve().parent for r in cached}
+    if len(folders) != 1:
+        raise ValueError('Refusing to remove mixed cache directories')
+    folder = folders.pop()
+    if folder.parent != base or len(folder.name) != 16 or any(c not in '0123456789abcdef' for c in folder.name):
+        raise ValueError('Refusing to remove a path outside the generated cache')
+    metadata = json.loads((folder / 'metadata.json').read_text())
+    if metadata.get('status') != 'completed' or metadata['sample_ids'] != [r['sample_id'] for r in cached]:
+        raise ValueError('Cache metadata does not match the completed samples')
+    shutil.rmtree(folder)
 
 
 def manifest_rows(root):
@@ -154,7 +172,7 @@ def choose_pipeline(scores, tolerance=0.005):
     return min(eligible, key=lambda r: (r['latency_ms'], -r['macro_f1'], r['method']))
 
 
-def tune(root, config, checkpoints, device, output, per_class=None, methods=METHODS):
+def tune(root, config, checkpoints, device, output, per_class=None, methods=METHODS, release_cache=False):
     root, output = Path(root), Path(output)
     if (output / 'selection.json').exists():
         raise FileExistsError('Selection already exists; use a new output directory')
@@ -184,6 +202,8 @@ def tune(root, config, checkpoints, device, output, per_class=None, methods=METH
                                'accuracy': score['accuracy'], 'weighted_f1': score['weighted_f1'], 'n_images': len(rows)}
                         details.append(run)
                         write_csv(output / 'predictions' / f'{config_id(run)}.csv', predictions)
+                    if release_cache:
+                        release_image_cache(root, cached)
             candidates.append({'method': method, 'params': params, 'macro_f1': float(np.mean(f1s)),
                                'latency_ms': float(np.mean(timings))})
             print(f"validation {method} {params}: {np.mean(f1s):.5f}", flush=True)
@@ -254,7 +274,7 @@ def freeze(root, selection_path, output, per_class=None, subset_seed=42, pilot=F
     return snapshot
 
 
-def evaluate(root, protocol_path, output, device):
+def evaluate(root, protocol_path, output, device, release_cache=False):
     root, output = Path(root), Path(output)
     protocol_path = Path(protocol_path)
     protocol = json.loads(protocol_path.read_text())
@@ -286,9 +306,13 @@ def evaluate(root, protocol_path, output, device):
             'cnn_config': cnn_config(config['cnn']),
             'measurements': {str(seed): classifier_latency(model, images, device)
                              for seed, model in models.items()}})
-    states = [dict(run, status='planned') for run in protocol['runs']]
+    # Process all classifier seeds against the same cache before releasing it.
+    ordered_runs = protocol['runs']
+    if release_cache:
+        ordered_runs = sorted(ordered_runs, key=lambda r: (r['condition'], str(r['noise_seed']), r['method'], r['train_seed']))
+    states = [dict(run, status='planned') for run in ordered_runs]
     summaries = []
-    for index, run in enumerate(protocol['runs']):
+    for index, run in enumerate(ordered_runs):
         run_id = config_id(run)
         states[index]['status'] = 'running'
         write_json(output / 'runs.json', states)
@@ -308,6 +332,9 @@ def evaluate(root, protocol_path, output, device):
                               'latency_ms': float(np.mean([r['latency_ms'] for r in predictions]))})
             states[index]['status'] = 'completed'
             write_csv(output / 'summary.csv', summaries)
+            key = lambda r: (r['condition'], str(r['noise_seed']), r['method'])
+            if release_cache and (index + 1 == len(ordered_runs) or key(ordered_runs[index + 1]) != key(run)):
+                release_image_cache(root, cached)
             print(f"{index+1}/{len(states)} {run}: macro_f1={score['macro_f1']:.4f}", flush=True)
         except Exception as error:
             states[index].update(status='failed', error=str(error))

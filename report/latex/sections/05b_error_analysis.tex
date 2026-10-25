@@ -1,0 +1,38 @@
+\subsection{Phân tích lỗi ghép cặp và theo lớp}
+\label{sec:errors}
+\subsubsection{Định nghĩa được giúp và bị làm sai}
+Với cùng mã ảnh, mức suy giảm, noise seed và checkpoint, gọi $b_i,e_i,y_i$ là dự đoán Identity, dự đoán sau xử lý và nhãn thật:
+\begin{align}
+H&=\sum_i\mathbf1[b_i\ne y_i,\ e_i=y_i],\\
+D&=\sum_i\mathbf1[b_i=y_i,\ e_i\ne y_i].
+\end{align}
+Với $N$ ảnh ghép cặp, $\Delta\mathrm{Accuracy}=100(H-D)/N$ điểm phần trăm. Quan hệ này kiểm tra tính nhất quán; không dùng $H-D$ thay cho thay đổi Macro-F1. Hai nhóm còn lại là cùng đúng và cùng sai; nhóm cùng sai vẫn có thể đổi sang lớp sai khác.
+\begin{table}[!htbp]\centering
+\caption{Số ảnh trung bình được giúp ($H$), bị làm sai ($D$) mỗi lượt full-test 12.630 ảnh. Trung bình qua noise seed và checkpoint, không phải ảnh nguồn độc lập.}
+{\small\begin{tabular}{llrrr}\toprule Phương pháp & Mức & $H$ & $D$ & $\Delta$ Acc. (đpt)\\\midrule
+\tableinput{tables/paired_transitions}\bottomrule\end{tabular}}\label{tab:transitions}\end{table}
+
+Ở mức vừa, Gaussian rồi Gamma sửa đúng trung bình 1472,67 ảnh nhưng làm sai 29,22 ảnh mỗi lượt, tăng ròng 1443,44 ảnh, tương ứng 11,43 điểm phần trăm Accuracy. Lợi ích tổng thể vẫn đi kèm nhóm mẫu bị ảnh hưởng bất lợi. Tính cả hai hướng chuyển giúp tránh chỉ trình bày ví dụ được cải thiện.
+
+\subsubsection{Ma trận nhầm lẫn và các cặp nhầm}
+Ma trận $C_{ab}$ có hàng là nhãn thật và cột là dự đoán. Chuẩn hóa hàng bằng support lớp thật giúp xem recall và cặp nhầm dù full-test mất cân bằng lớp.
+\fig{paired_confusions.png}{1}{Ma trận chuẩn hóa hàng trên full-test mức nặng, checkpoint 11, noise seed 101. Bốn phương pháp dùng cùng 12.630 ảnh; đây là một lát cắt xác định.}{fig:confusions}
+\begin{table}[!htbp]\centering
+\caption{Ba cặp nhầm có tỷ lệ trung bình cao nhất của mỗi phương pháp ở mức nặng, full-test. Mẫu nguồn dùng chung giữa các lượt.}
+{\small\begin{tabular}{lrrr}\toprule Phương pháp & Lớp thật & Lớp dự đoán & Tỷ lệ (\%)\\\midrule
+\tableinput{tables/confusion_pairs}\bottomrule\end{tabular}}\label{tab:pairs}\end{table}
+
+\subsubsection{Các lớp khó và ví dụ có metadata}
+\fig{per_class_severe.png}{1}{F1 từng lớp mức nặng trên full-test. Trung bình noise trong checkpoint rồi trung bình ba checkpoint; không phải khoảng tin cậy của camera thực.}{fig:classf1}
+\begin{table}[!htbp]\centering
+\caption{Năm lớp có F1 thấp nhất của Gaussian rồi Gamma mức nặng. SD qua checkpoint sau trung bình noise; chênh lệch so Identity là điểm phần trăm.}
+\begin{tabular}{rrrr}\toprule Class ID & F1 (\%) & SD & $\Delta$ F1\\\midrule
+\tableinput{tables/hard_classes}\bottomrule\end{tabular}\label{tab:hardclasses}\end{table}
+
+Macro-F1 tăng không có nghĩa mọi lớp đạt hiệu năng tốt. Các lớp khó vẫn có F1 thấp và cần xem cùng support, cặp nhầm và ảnh nguồn. Không quy một cặp nhầm chắc chắn cho mất nét số hoặc sai màu chỉ từ ma trận; đó là giả thuyết cần quan sát ảnh cụ thể để xác nhận.
+\begin{table}[!htbp]\centering
+\caption{Ví dụ dự đoán thô full-test mức vừa, checkpoint 11, noise seed 101; sau xử lý Gaussian rồi Gamma. ID là phần cuối của \texttt{gtsrb/test/<ID>}; mỗi nhóm lấy hai ID nhỏ nhất.}
+\begin{tabular}{llrrr}\toprule ID & Nhóm & Nhãn thật & Identity & Sau xử lý\\\midrule
+\tableinput{tables/representative_cases}\bottomrule\end{tabular}\end{table}
+
+ID và nhãn trong bảng truy vết trường hợp được giúp, bị làm sai và vẫn sai mà không chọn theo độ đẹp của ảnh. F1 từng lớp, chuyển đúng/sai, ví dụ và dự đoán gốc được lưu cùng gói kết quả. Không suy ra tần suất lỗi camera đêm thực từ GTSRB có suy giảm tổng hợp.

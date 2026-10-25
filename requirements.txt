@@ -1,4 +1,5 @@
-# Versions verified on Python 3.14 / macOS arm64. Full environment: requirements-lock.txt.
+# Original Python 3.14 / macOS arm64 versions; not a universal Windows/CUDA environment.
+# Kaggle: use the main notebook's setup cell; keep its preinstalled PyTorch/CUDA.
 numpy==2.5.3
 pillow==12.3.0
 opencv-python-headless==5.0.0.93

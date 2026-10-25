@@ -1,0 +1,28 @@
+{
+  "status": "raw_fulltest_predictions_verified",
+  "runs": 219,
+  "images_per_run": 12630,
+  "prediction_rows": 2765970,
+  "metrics_recomputed": [
+    "accuracy",
+    "macro_f1",
+    "weighted_f1"
+  ],
+  "confusion_matrices_verified": 219,
+  "checkpoint_hashes": {
+    "11": "1eb63e6c674f592c066eded4b02923c093019264a2be1db757f1015936ad7164",
+    "22": "9c0ae677c945180c1568b63f839215864b53988a55b156f75a210eeb5139c351",
+    "33": "e186234a5acabe38d6093c2573d23355c3d59b6539fa1f971b219cd2a66e1936"
+  },
+  "original_archive_sha256": "1141f3b3be6f0cb59918afa1e685947a9b07aa60e6601c4011386dc88efd1f0b",
+  "recovered_archive_sha256": "01ee0fa7c2b42288c644b0c21d200344ff6cffb5c549f96b4a3abc2c917b6091",
+  "original_runtime_status": "ERROR",
+  "failure": "EXDEV during final subset ZIP replacement",
+  "new_training_required": false,
+  "original_preserved": true,
+  "original_duplicate_paths": {
+    "07_supplemental/ablation/protocol.json": 2,
+    "07_supplemental/ablation/summary.csv": 2
+  },
+  "recovered_archive": "outputs\\kaggle-20261025\\gtsrb-notebook-results-verified.zip"
+}

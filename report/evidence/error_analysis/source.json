@@ -1,0 +1,36 @@
+{
+  "archive_name": "gtsrb-notebook-results.zip",
+  "archive_sha256": "55187685aac5158feaa6088df7bcc101b38659dd973d4e15384ea9b25da42825",
+  "scope": "subset 430 images, 10 per class; not full-test",
+  "runs": 219,
+  "predictions_recomputed": 94170,
+  "checkpoint_hash_checks": [
+    {
+      "seed": 11,
+      "sha256": "75a1b5e1723b04fcdb5d39c4686345e5d758379c6adac52b69ff79f30ad71f5d",
+      "verified": true
+    },
+    {
+      "seed": 22,
+      "sha256": "c8dfdcdb954bb39f92cc7c19475ff21df41dc099e0678859a361a2494dc26e32",
+      "verified": true
+    },
+    {
+      "seed": 33,
+      "sha256": "a10301da8c74832aac186e9300fbd745cec004bacf1d8db9e2bd418efa34fd3a",
+      "verified": true
+    }
+  ],
+  "ground_truth_check": "Internal agreement across all prediction runs. Official image/annotation files not re-downloaded for independent label verification.",
+  "files": {
+    "report\\evidence\\error_analysis\\audit.json": "4d65a23fa6ddc79aabb71bd0f2272f9d4a3aaa9b8bca8cc0b7632b54041185b7",
+    "report\\evidence\\error_analysis\\confusion_pairs.csv": "4d1bed7aafc0bc24e67a02674f80c7444ca6682928810395ba0470b619edb6ed",
+    "report\\evidence\\error_analysis\\examples.csv": "82f42f18214b5ba78fbbd2d7d3c5c729d56d58ea7f7195c993bab28c1f6832d1",
+    "report\\evidence\\error_analysis\\per_class_aggregate.csv": "88a3d430a14b5b24f130f436c86ab138dda17b6603b6217409ef8ae45f626743",
+    "report\\evidence\\error_analysis\\representative_cases.csv": "64ad085c6add843bc22d5a77fd680e5a7ca2b1d54ef67d920470a8bbf96b35b5",
+    "report\\evidence\\error_analysis\\source.json": "c2557bef8b32836adf3110cdb98515cf7f34e9a92057e977cc923ed809a555cd",
+    "report\\evidence\\error_analysis\\transitions.csv": "68c0c4a581eb9219808a717d0f90b2003515cdc241b9439ffde34433145df548"
+  },
+  "fulltest": "Raw predictions absent; reported CSV retained separately.",
+  "real_lowlight": "Not yet collected or evaluated."
+}

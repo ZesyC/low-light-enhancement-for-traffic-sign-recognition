@@ -1,0 +1,42 @@
+{
+  "dataset": {
+    "name": "GTSRB official final archives",
+    "url": "https://sid.erda.dk/public/archives/daaeac0d7ce1152aea9b61d9f1e19370/published-archive.html",
+    "distribution": "Download into temporary runtime storage; do not include source images in notebook outputs."
+  },
+  "models": [
+    {
+      "name": "zero_dce",
+      "sha256": "a4395acb874f320375d9704997cef874eaaaaa26a1777ceb29a92b70f74c3612",
+      "repository": "https://github.com/Li-Chongyi/Zero-DCE.git",
+      "commit": "e0f4adc54d0f23348c4a9b84acc08fe8778d5bfd",
+      "directory": "external/Zero-DCE",
+      "checkpoint": "external/Zero-DCE/Zero-DCE_code/snapshots/Epoch99.pth",
+      "download": {"kind": "url", "url": "https://raw.githubusercontent.com/Li-Chongyi/Zero-DCE/e0f4adc54d0f23348c4a9b84acc08fe8778d5bfd/Zero-DCE_code/snapshots/Epoch99.pth"},
+      "source_page": "https://github.com/Li-Chongyi/Zero-DCE",
+      "license_note": "Author states academic research / CC BY-NC 4.0. Download from author; do not relicense or bundle author weights."
+    },
+    {
+      "name": "retinexformer",
+      "sha256": "9b4810dc51322fab70be8658ee0ad1df64a54aa814497b7849767baa2ff32cd1",
+      "repository": "https://github.com/caiyuanhao1998/Retinexformer.git",
+      "commit": "1e9a0efce4b306b6701b824768370ff26066c32a",
+      "directory": "external/Retinexformer",
+      "checkpoint": "external/Retinexformer/pretrained_weights/LOL_v1.pth",
+      "download": {"kind": "gdrive", "id": "1xDwQtTCj3tlAVCTJgYrzonBGVwqeOhKu"},
+      "source_page": "https://github.com/caiyuanhao1998/Retinexformer#3-testing",
+      "license_note": "Author repository MIT; retain upstream notices. Download author checkpoint directly."
+    },
+    {
+      "name": "diffusion",
+      "sha256": "acc3b4a41b7a0a12dbd24bbd904d44ddc070cffdcc638dbb038acc3c50715c9d",
+      "repository": "https://github.com/JianghaiSCU/Diffusion-Low-Light.git",
+      "commit": "e3223354f47874d3e80d969d3ab2a516874785e8",
+      "directory": "external/Diffusion-Low-Light",
+      "checkpoint": "external/Diffusion-Low-Light/ckpt/model.pth.tar",
+      "download": {"kind": "gdrive", "id": "1f4zDvPsWKrID33OJdeHwc5VOBILkm0KW"},
+      "source_page": "https://github.com/JianghaiSCU/Diffusion-Low-Light#pre-trained-models",
+      "license_note": "Author repository MIT; retain upstream notices. Checkpoint pretraining subset remains unverified as noted in experiment config."
+    }
+  ]
+}
